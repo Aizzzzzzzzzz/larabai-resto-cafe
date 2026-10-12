@@ -23,6 +23,10 @@
 > real session cart instead of in Phase 3; `qr.session` middleware; `customer.gate` view; my-orders
 > list kept as session tokens.)* Phase 3 still owes: creating orders/payments, and requiring the
 > order token to be in the visitor's session.
+>
+> **2026-10-12 — Scaffold Step 3 done:** cashier module. *(actual: `App\Services\Pricing` built now
+> instead of Phase 2 — the payment form needs the discount on the server; `App\Support\CashierActions`
+> holds the per-stage row actions until `OrderWorkflow` replaces it; `DiscountType` enum added.)*
 
 ---
 

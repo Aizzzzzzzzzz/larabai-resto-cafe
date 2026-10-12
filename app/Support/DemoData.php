@@ -3,7 +3,7 @@
 namespace App\Support;
 
 use App\Enums\PaymentMethod;
-use Illuminate\Support\Carbon;
+use App\Services\Pricing;
 
 /**
  * The mockup's sample data (larabai-mockup/js/app.js → BB_DATA), ported to PHP.
@@ -368,12 +368,12 @@ class DemoData
                 'holder_name' => $holder,
                 'eligible_count' => $eligible,
                 'diner_count' => $diners,
-                'amount' => self::seniorDiscount($subtotal, $eligible, $diners),
+                'amount' => Pricing::seniorDiscount($subtotal, $eligible, $diners),
             ];
         }
 
         $deliveryFee = $type === 'delivery' ? (float) config('cafe.delivery.fee') : 0.0;
-        $total = max(0, round($subtotal - ($discount['amount'] ?? 0) + $deliveryFee, 2));
+        $total = Pricing::total($subtotal, $discount['amount'] ?? 0, $deliveryFee);
 
         // Paid unless still waiting at the counter, cancelled before paying, or cash on delivery not yet collected
         $paid = ! in_array($status, ['awaiting_payment', 'cancelled'], true) && ! ($isCod && $status !== 'completed');
@@ -455,15 +455,6 @@ class DemoData
             'notes' => $notes,
             'options' => $options,
         ];
-    }
-
-    /** Senior/PWD: remove 12% VAT from the eligible share, then 20% off it (mockup seniorDiscount). */
-    private static function seniorDiscount(float $subtotal, int $eligible, int $diners): float
-    {
-        $share = $subtotal * min($eligible, $diners) / $diners;
-        $discounted = $share / (1 + config('cafe.senior_pwd.vat')) * (1 - config('cafe.senior_pwd.percent') / 100);
-
-        return round($share - $discounted, 2);
     }
 
     // ---------------------------------------------------------------- Option groups

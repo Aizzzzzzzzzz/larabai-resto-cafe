@@ -59,13 +59,25 @@ No database, no auth. Plan and route map: `development-plan.md` §0, §4.
 
 > Verified 2026-10-12: 90 tests pass (`tests/Feature/Customer/CustomerOrderingTest.php`); HTTP walk-through
 > (scan → add 2 items → cart ₱663.00 → GCash → wallet → paid → tracker) works; headless-Edge screenshots of
-> menu, tracker, wallet and receipt match the mockup. JS interactions (sheet, live price) not clicked in a real browser yet.
+> menu, tracker, wallet and receipt match the mockup. JS interactions (sheet, live price, checkout toggles)
+> clicked in headless Edge during Step 3 — all pass.
 
 ## Step 3 — Cashier module (`cashier.html`)
-- [ ] POS: menu grid, categories, search, options modal, ticket built by JS into one form → POST charge
-- [ ] Orders: tabs (Awaiting payment / In progress / Completed / Cancelled & voided) as `?tab=`, search, row actions per stage as forms
-- [ ] Payment: cash (tendered → change preview), GCash / Maya, COD, Senior/PWD fields → POST
-- [ ] Receipt: printable
+- [x] POS: menu grid, categories, search, options modal, ticket built by JS (kept in localStorage) into one form → POST charge,
+      validated + re-priced by `ChargeRequest`; the ticket empties after a successful charge
+- [x] Orders: tabs (Awaiting payment / In progress / Completed / Cancelled & voided / All) and search as GET forms, KPIs,
+      row actions per stage from `App\Support\CashierActions` (same rules guard the controllers → 403);
+      one shared Cancel/Void reason modal (`data-action` on the row button, `_action` kept across a failed submit)
+- [x] Payment: cash (tendered, quick amounts, change preview), GCash / Maya, collect COD, Senior/PWD fields → POST,
+      validated by `TakePaymentRequest` (ID required, diners ≥ eligible, cash must cover the amount due after discount)
+- [x] Receipt: printable slip, VAT / VAT-exempt lines, change, VOIDED stamp
+- [x] `App\Services\Pricing` *(actual: built now, Phase 2 item)* — Senior/PWD discount, total, VAT breakdown, quick cash; `Unit/PricingTest`
+- [x] Sidebar badges now live (unpaid orders, low/out ingredients) via `StockLevel`
+- [x] Rule from plan §3 applied: cash on delivery can't be marked delivered before the cash is collected
+
+> Verified 2026-10-12: 101 tests pass (`tests/Feature/Cashier/CashierTest.php`); 21 click-through checks in headless
+> Edge over DevTools (item sheet, POS ticket, charge, discount preview ₱587.14 = server figure, change). Fixed: the
+> tap-twice state class `.btn.confirm` clashed with the mockup's payment button class — renamed to `.btn.armed`.
 
 ## Step 4 — Kitchen module (`kitchen.html`)
 - [ ] Board: New / Preparing / Ready columns, ticket details, time since, COD flag; Start / Back / Ready / Done as forms

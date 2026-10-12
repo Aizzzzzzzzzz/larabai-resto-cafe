@@ -4,6 +4,7 @@ namespace App\Http\Requests\Customer;
 
 use App\Services\CustomerCart;
 use App\Support\DemoData;
+use App\Support\MenuOptions;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Validator;
 
@@ -39,17 +40,8 @@ class AddToCartRequest extends FormRequest
                 return;
             }
 
-            foreach ($item['options'] as $group) {
-                $picked = (array) ($this->input("options.{$group['code']}") ?? []);
-                $valid = array_column($group['choices'], 'code');
-
-                if (array_diff($picked, $valid)) {
-                    $validator->errors()->add('options', "Choose a valid {$group['name']}.");
-                } elseif ($group['type'] === 'single' && count($picked) > 1) {
-                    $validator->errors()->add('options', "Choose only one {$group['name']}.");
-                } elseif ($group['required'] && ! $picked) {
-                    $validator->errors()->add('options', "Choose a {$group['name']}.");
-                }
+            if ($problem = MenuOptions::problem($item, $this->chosenOptions())) {
+                $validator->errors()->add('options', $problem);
             }
         }];
     }

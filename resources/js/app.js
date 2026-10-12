@@ -8,6 +8,7 @@ import { initModals } from './core/modal';
 import { initClock } from './core/clock';
 import { initConfirm } from './core/confirm';
 import { initCustomer } from './modules/customer';
+import { initCashier } from './modules/cashier';
 
 initTheme();
 initToast();
@@ -15,3 +16,4 @@ initModals();
 initClock();
 initConfirm();
 initCustomer();
+initCashier();

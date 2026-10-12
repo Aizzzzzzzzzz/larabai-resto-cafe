@@ -4,7 +4,7 @@
 body:not(.m-staff):not(.m-customer) .toast-pop { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); z-index: 60; background: var(--ink); color: var(--bg); padding: 10px 16px; border-radius: 999px; font-size: .88rem; box-shadow: var(--shadow); }
 
 /* "Tap again to confirm" state (mockup styled it on the navigator only) */
-.btn.confirm { color: var(--danger); border-color: var(--danger); }
+.btn.armed { color: var(--danger); border-color: var(--danger); }
 
 /* Placeholder shown on screens not ported yet (UI scaffold only) */
 .scaffold-note { margin: 24px auto; max-width: 560px; padding: 20px 22px; border: 1px dashed var(--border); border-radius: 14px; color: var(--text-muted); display: grid; gap: 8px; text-align: center; }

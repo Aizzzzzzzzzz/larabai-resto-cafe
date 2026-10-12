@@ -25,11 +25,11 @@ export function initConfirm() {
         btn.dataset.armed = '1';
         btn.dataset.label = btn.textContent;
         btn.textContent = btn.dataset.confirmTwice;
-        btn.classList.add('confirm');
+        btn.classList.add('armed');
         setTimeout(() => {
             delete btn.dataset.armed;
             btn.textContent = btn.dataset.label;
-            btn.classList.remove('confirm');
+            btn.classList.remove('armed');
         }, 4000);
     });
 }

@@ -7,7 +7,7 @@
 
 @section('body')
     <div class="shell">
-        <x-sidebar :active="$active ?? ''" :badges="$badges ?? []" />
+        <x-sidebar :active="$active ?? ''" :badges="$badges ?? null" />
         <div class="work">
             @section('work-head')
                 <header class="work-head">

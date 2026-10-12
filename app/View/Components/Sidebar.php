@@ -3,6 +3,8 @@
 namespace App\View\Components;
 
 use App\Enums\Role;
+use App\Support\DemoData;
+use App\Support\StockLevel;
 use Illuminate\View\Component;
 use Illuminate\View\View;
 
@@ -42,16 +44,30 @@ class Sidebar extends Component
 
     /**
      * @param  string  $active  id of the highlighted link
-     * @param  array<string, int>  $badges  e.g. ['awaiting' => 2, 'lowstock' => 5]; 0 hides the badge
+     * @param  array<string, int>|null  $badges  e.g. ['awaiting' => 2, 'lowstock' => 5]; 0 hides the badge.
+     *                                           Left out, the live counts are used.
      */
-    public function __construct(public string $active = '', public array $badges = [])
+    public function __construct(public string $active = '', public ?array $badges = null)
     {
         $this->user = session('demo_staff', ['name' => 'Maria Dizon', 'role' => Role::Admin->value]);
         $this->role = Role::from($this->user['role']);
+        $this->badges ??= self::liveBadges();
 
         $groups = array_filter(self::NAV, fn ($g) => in_array($this->role, $g['roles'], true));
         usort($groups, fn ($a, $b) => ($b['group'] === 'Admin') <=> ($a['group'] === 'Admin'));
         $this->groups = $groups;
+    }
+
+    /**
+     * Orders waiting for payment, and ingredients that are low or out.
+     * UI scaffold: counted from DemoData; Phase 4 / 6 count from the database.
+     */
+    public static function liveBadges(): array
+    {
+        return [
+            'awaiting' => collect(DemoData::orders())->filter(fn ($o) => ! $o['paid_at'] && ! in_array($o['status'], ['cancelled', 'voided'], true))->count(),
+            'lowstock' => collect(DemoData::ingredients())->filter(fn ($i) => StockLevel::of($i) !== StockLevel::OK)->count(),
+        ];
     }
 
     public function render(): View
