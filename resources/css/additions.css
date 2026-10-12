@@ -1,0 +1,10 @@
+/* Laravel-only additions on top of mockup.css. Keep this file small. */
+
+/* Flash toast on screens the mockup never toasted on (public pages, login, kitchen) */
+body:not(.m-staff):not(.m-customer) .toast-pop { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); z-index: 60; background: var(--ink); color: var(--bg); padding: 10px 16px; border-radius: 999px; font-size: .88rem; box-shadow: var(--shadow); }
+
+/* Placeholder shown on screens not ported yet (UI scaffold only) */
+.scaffold-note { margin: 24px auto; max-width: 560px; padding: 20px 22px; border: 1px dashed var(--border); border-radius: 14px; color: var(--text-muted); display: grid; gap: 8px; text-align: center; }
+.scaffold-note b { color: var(--ink); font-family: var(--display); font-size: 1.1rem; }
+.scaffold-note code { font: 500 .8rem var(--mono); }
+.scaffold-note form { display: flex; justify-content: center; }

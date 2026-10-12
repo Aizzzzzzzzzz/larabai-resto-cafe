@@ -1,11 +1,5 @@
-@import 'tailwindcss';
-
-@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
-@source '../../storage/framework/views/*.php';
-@source '../**/*.blade.php';
-@source '../**/*.js';
-
-@theme {
-    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
-        'Segoe UI Symbol', 'Noto Color Emoji';
-}
+/* Brew & Bite Café — stylesheet entry.
+   mockup.css is the static mockup's style.css copied unchanged, so screens can be diffed against
+   the mockup. Anything the Laravel version needs on top goes in additions.css. */
+@import './mockup.css';
+@import './additions.css';
