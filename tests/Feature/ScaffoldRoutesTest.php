@@ -9,7 +9,8 @@ use Tests\TestCase;
 
 /**
  * UI scaffold check (ui-scaffold-checklist.md): every screen opens, every form route answers
- * with the "nothing is saved" toast. Replaced module by module by real feature tests.
+ * with the "nothing is saved" toast. Replaced module by module by real feature tests
+ * (customer module: tests/Feature/Customer/CustomerOrderingTest.php).
  */
 class ScaffoldRoutesTest extends TestCase
 {
@@ -21,14 +22,6 @@ class ScaffoldRoutesTest extends TestCase
             'components (staff)' => ['navigator.components.staff'],
             'components (customer)' => ['navigator.components.customer'],
             'login' => ['login'],
-            'customer menu' => ['customer.menu'],
-            'customer cart' => ['customer.cart.index'],
-            'customer checkout' => ['customer.checkout.create'],
-            'customer my orders' => ['customer.orders.index'],
-            'customer pay' => ['customer.pay.create', ['order' => 'demo']],
-            'customer success' => ['customer.orders.success', ['order' => 'demo']],
-            'customer track' => ['customer.orders.show', ['order' => 'demo']],
-            'customer status poll' => ['customer.orders.status', ['order' => 'demo']],
             'cashier pos' => ['cashier.pos.index'],
             'cashier orders' => ['cashier.orders.index'],
             'cashier payment' => ['cashier.payments.create', ['order' => 'demo']],
@@ -52,12 +45,6 @@ class ScaffoldRoutesTest extends TestCase
         return [
             'login' => ['post', 'login.store'],
             'logout' => ['post', 'logout'],
-            'cart add' => ['post', 'customer.cart.store'],
-            'cart update' => ['patch', 'customer.cart.update', ['line' => 1]],
-            'cart remove' => ['delete', 'customer.cart.destroy', ['line' => 1]],
-            'checkout' => ['post', 'customer.checkout.store'],
-            'customer pay' => ['post', 'customer.pay.store', ['order' => 'demo']],
-            'customer cancel' => ['post', 'customer.orders.cancel', ['order' => 'demo']],
             'pos charge' => ['post', 'cashier.pos.store'],
             'order complete' => ['patch', 'cashier.orders.complete', ['order' => 'demo']],
             'order cancel' => ['post', 'cashier.orders.cancel', ['order' => 'demo']],

@@ -114,6 +114,31 @@ class DemoData
         return collect(self::items())->firstWhere('code', $code);
     }
 
+    /**
+     * Sold out = the kitchen's switch when set, otherwise "an ingredient can't cover one serving"
+     * (recipe + a 12 oz cup and a lid for drinks), as in the mockup's menu.isSoldOut().
+     */
+    public static function isSoldOut(array $item): bool
+    {
+        if ($item['sold_out_override'] !== null) {
+            return (bool) $item['sold_out_override'];
+        }
+
+        $stock = array_column(self::ingredients(), 'stock_qty', 'code');
+        $needs = self::recipes()[$item['code']] ?? [];
+        if ($item['is_drink']) {
+            $needs = [...$needs, ['cup12', 1], ['lid', 1]];
+        }
+
+        foreach ($needs as [$ingredient, $qty]) {
+            if (($stock[$ingredient] ?? 0) < $qty) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     /** Option-group templates the admin can attach to new menu items. */
     public static function optionTemplates(): array
     {
@@ -305,7 +330,7 @@ class DemoData
             [9, 'qr', 'delivery', null, 'preparing', 'CASH', 15, [['longganisa', 2, ['addons' => ['egg']]], ['wintermelon', 2, ['size' => 'm', 'sugar' => 's50']]], ['address' => '27 Mabini St., San Roque, Tarlac City', 'landmark' => null, 'log' => ['preparing' => 10]]],
             [10, 'qr', 'dine-in', 1, 'paid', 'MAYA', 7, [['macchiato', 1, ['temp' => 'hot', 'size' => 'm', 'addons' => ['whip']]], ['pandesal', 1, []]], []],
             [11, 'qr', 'delivery', null, 'awaiting_payment', 'CASH', 5, [['tocino', 1, []], ['javachip', 1, ['size' => 'l']]], ['address' => 'Unit 3B, Sto. Cristo Apartments, Tarlac City', 'landmark' => 'Beside the 7-Eleven']], // cash on delivery
-            [12, 'qr', 'dine-in', 5, 'awaiting_payment', 'CASH', 4, [['taro', 3, ['size' => 'm', 'sugar' => 's100', 'addons' => ['pudding']]], ['fries', 2, ['flavor' => 'cheese']]], []],
+            [12, 'qr', 'dine-in', 5, 'awaiting_payment', 'CASH', 4, [['okinawa', 3, ['size' => 'm', 'sugar' => 's100', 'addons' => ['pudding']]], ['fries', 2, ['flavor' => 'cheese']]], []],
             [13, 'qr', 'take-out', null, 'awaiting_payment', 'CASH', 2, [['ube', 1, ['temp' => 'iced', 'size' => 'm']]], []],
         ];
 

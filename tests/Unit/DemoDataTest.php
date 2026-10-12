@@ -95,6 +95,17 @@ class DemoDataTest extends TestCase
         $this->assertSame('VOIDED', DemoData::order(4)['payment']['status']);
     }
 
+    public function test_open_orders_contain_no_sold_out_items(): void
+    {
+        foreach (DemoData::orders() as $o) {
+            if (in_array($o['status'], ['awaiting_payment', 'paid'], true)) {
+                foreach ($o['items'] as $line) {
+                    $this->assertFalse(DemoData::isSoldOut(DemoData::item($line['menu_item'])), "{$o['order_no']} has sold-out {$line['name']}");
+                }
+            }
+        }
+    }
+
     public function test_finds_orders_by_id_or_public_token(): void
     {
         $this->assertSame(8, DemoData::order(8)['id']);

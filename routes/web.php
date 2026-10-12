@@ -36,25 +36,28 @@ Route::get('/counter', [Customer\SessionController::class, 'counter'])
 
 // ---- Customer: ordering ----
 Route::prefix('order')->name('customer.')->group(function () {
+    // Without a scanned QR the menu shows "Scan the QR code on your table"
     Route::get('/menu', [Customer\MenuController::class, 'index'])->name('menu');
 
-    Route::get('/cart', [Customer\CartController::class, 'index'])->name('cart.index');
-    Route::post('/cart', [Customer\CartController::class, 'store'])->name('cart.store');
-    Route::patch('/cart/{line}', [Customer\CartController::class, 'update'])->name('cart.update');
-    Route::delete('/cart/{line}', [Customer\CartController::class, 'destroy'])->name('cart.destroy');
+    Route::middleware('qr.session')->group(function () {
+        Route::get('/cart', [Customer\CartController::class, 'index'])->name('cart.index');
+        Route::post('/cart', [Customer\CartController::class, 'store'])->name('cart.store');
+        Route::patch('/cart/{line}', [Customer\CartController::class, 'update'])->whereNumber('line')->name('cart.update');
+        Route::delete('/cart/{line}', [Customer\CartController::class, 'destroy'])->whereNumber('line')->name('cart.destroy');
 
-    Route::get('/checkout', [Customer\CheckoutController::class, 'create'])->name('checkout.create');
-    Route::post('/checkout', [Customer\CheckoutController::class, 'store'])->name('checkout.store');
+        Route::get('/checkout', [Customer\CheckoutController::class, 'create'])->name('checkout.create');
+        Route::post('/checkout', [Customer\CheckoutController::class, 'store'])->name('checkout.store');
 
-    Route::get('/mine', [Customer\OrderController::class, 'index'])->name('orders.index');
+        Route::get('/mine', [Customer\OrderController::class, 'index'])->name('orders.index');
 
-    // {order} = the order's public token
-    Route::get('/{order}/pay', [Customer\PaymentController::class, 'create'])->name('pay.create');
-    Route::post('/{order}/pay', [Customer\PaymentController::class, 'store'])->name('pay.store');
-    Route::get('/{order}/done', [Customer\OrderController::class, 'success'])->name('orders.success');
-    Route::get('/{order}/status', [Customer\OrderController::class, 'status'])->name('orders.status');
-    Route::post('/{order}/cancel', [Customer\OrderController::class, 'cancel'])->name('orders.cancel');
-    Route::get('/{order}', [Customer\OrderController::class, 'show'])->name('orders.show');
+        // {order} = the order's public token
+        Route::get('/{order}/pay', [Customer\PaymentController::class, 'create'])->name('pay.create');
+        Route::post('/{order}/pay', [Customer\PaymentController::class, 'store'])->name('pay.store');
+        Route::get('/{order}/done', [Customer\OrderController::class, 'success'])->name('orders.success');
+        Route::get('/{order}/status', [Customer\OrderController::class, 'status'])->name('orders.status');
+        Route::post('/{order}/cancel', [Customer\OrderController::class, 'cancel'])->name('orders.cancel');
+        Route::get('/{order}', [Customer\OrderController::class, 'show'])->name('orders.show');
+    });
 });
 
 // ---- Cashier ----

@@ -7,9 +7,11 @@ import { initToast } from './core/toast';
 import { initModals } from './core/modal';
 import { initClock } from './core/clock';
 import { initConfirm } from './core/confirm';
+import { initCustomer } from './modules/customer';
 
 initTheme();
 initToast();
 initModals();
 initClock();
 initConfirm();
+initCustomer();

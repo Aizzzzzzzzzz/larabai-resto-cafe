@@ -47,11 +47,19 @@ No database, no auth. Plan and route map: `development-plan.md` §0, §4.
 > Verified 2026-10-12: 82 tests pass; galleries return 200 over HTTP; the modal form posts with CSRF and lands with the toast.
 
 ## Step 2 — Customer module (`customer.html`)
-- [ ] QR entry: `/t/{table}` (signed) and `/counter` (signed) start a session and redirect to the menu; no session → "Scan the QR code" gate
-- [ ] Menu: categories bar, search, best seller / new labels, sold-out greyed, item sheet (options, notes, qty, live price) → POST add to cart
-- [ ] Cart: qty update (PATCH), remove (DELETE), changed-price notice, cart bar
-- [ ] Checkout: dine-in / take-out / delivery, address + landmark, payment method → POST
-- [ ] Pay (simulated GCash / Maya) → POST; Success + receipt; Track (progress) + My orders; Cancel order (POST)
+- [x] QR entry: `/t/{table}` (signed) and `/counter` (signed) start a session and redirect to the menu; no session → "Scan the QR code" gate;
+      later screens behind `qr.session` middleware; a different table/counter starts a fresh cart
+- [x] Menu: categories bar, search, best seller / new labels, sold-out greyed, item sheet (options, notes, qty, live price) → POST add to cart
+      (each item's options are server-rendered `<template>`s copied into the one sheet form)
+- [x] Cart: qty − / + (PATCH), remove (DELETE), changed-price notice, cart bar
+      *(actual: the cart works for real — `App\Services\CustomerCart` in the Laravel session, prices from the menu, options validated by `AddToCartRequest`. Session state, not saved data, so it carries into Phase 3)*
+- [x] Checkout: dine-in / take-out (table QR) or take-out / delivery (counter QR), address + landmark, payment method → POST, validated by `CheckoutRequest`
+- [x] Pay (simulated GCash / Maya) → POST; Success + receipt; Track (progress, order tabs, 10 s status poll) + My orders; Cancel order (tap twice, only while awaiting payment)
+      *(scaffold: placing an order saves nothing — checkout shows the sample order matching the chosen type/method with the demo toast)*
+
+> Verified 2026-10-12: 90 tests pass (`tests/Feature/Customer/CustomerOrderingTest.php`); HTTP walk-through
+> (scan → add 2 items → cart ₱663.00 → GCash → wallet → paid → tracker) works; headless-Edge screenshots of
+> menu, tracker, wallet and receipt match the mockup. JS interactions (sheet, live price) not clicked in a real browser yet.
 
 ## Step 3 — Cashier module (`cashier.html`)
 - [ ] POS: menu grid, categories, search, options modal, ticket built by JS into one form → POST charge

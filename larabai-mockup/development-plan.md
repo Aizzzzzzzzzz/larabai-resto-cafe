@@ -18,6 +18,11 @@
 > mockup's `BB_DATA` + 13 sample orders), `peso()` helper, enums `OrderStatus` / `OrderType` /
 > `PaymentMethod` *(actual: created before Phase 2)*, demo-only component gallery routes
 > `navigator.components.staff` / `navigator.components.customer` *(actual: not in §4)*.
+>
+> **2026-10-12 — Scaffold Step 2 done:** customer module. *(actual: `CustomerCart` built now as a
+> real session cart instead of in Phase 3; `qr.session` middleware; `customer.gate` view; my-orders
+> list kept as session tokens.)* Phase 3 still owes: creating orders/payments, and requiring the
+> order token to be in the visitor's session.
 
 ---
 
