@@ -20,6 +20,8 @@ use Illuminate\Support\Facades\Route;
 // ---- Public ----
 Route::get('/', [Public\HomeController::class, 'index'])->name('home');
 Route::get('/navigator', [Public\NavigatorController::class, 'index'])->name('navigator');
+Route::get('/navigator/components', [Public\ComponentGalleryController::class, 'staff'])->name('navigator.components.staff');
+Route::get('/navigator/components/customer', [Public\ComponentGalleryController::class, 'customer'])->name('navigator.components.customer');
 
 // ---- Staff login ----
 Route::get('/login', [LoginController::class, 'create'])->name('login');

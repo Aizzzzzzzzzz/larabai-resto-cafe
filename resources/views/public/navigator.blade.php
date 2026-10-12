@@ -38,6 +38,7 @@
                 <li>Cashier: <a href="{{ route('cashier.pos.index') }}">Point of sale</a> · <a href="{{ route('cashier.orders.index') }}">Orders</a></li>
                 <li>Kitchen: <a href="{{ route('kitchen.display') }}">Kitchen display</a></li>
                 <li>Inventory: <a href="{{ route('inventory.ingredients.index') }}">Stock</a></li>
+                <li>Shared components: <a href="{{ route('navigator.components.staff') }}">Staff side</a> · <a href="{{ route('navigator.components.customer') }}">Customer side</a></li>
                 <li>Admin: <a href="{{ route('admin.dashboard') }}">Dashboard</a> · <a href="{{ route('admin.menu-items.index') }}">Menu &amp; prices</a> · <a href="{{ route('admin.users.index') }}">Users &amp; roles</a> · <a href="{{ route('admin.audit-logs.index') }}">Audit logs</a></li>
             </ul>
         </section>

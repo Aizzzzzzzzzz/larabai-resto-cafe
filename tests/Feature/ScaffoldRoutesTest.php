@@ -18,6 +18,8 @@ class ScaffoldRoutesTest extends TestCase
         return [
             'home' => ['home'],
             'navigator' => ['navigator'],
+            'components (staff)' => ['navigator.components.staff'],
+            'components (customer)' => ['navigator.components.customer'],
             'login' => ['login'],
             'customer menu' => ['customer.menu'],
             'customer cart' => ['customer.cart.index'],

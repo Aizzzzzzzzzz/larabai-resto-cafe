@@ -6,8 +6,10 @@ import { initTheme } from './core/theme';
 import { initToast } from './core/toast';
 import { initModals } from './core/modal';
 import { initClock } from './core/clock';
+import { initConfirm } from './core/confirm';
 
 initTheme();
 initToast();
 initModals();
 initClock();
+initConfirm();

@@ -13,6 +13,11 @@
 > **2026-10-12 — Scaffold Step 0 done:** shell, layouts, sidebar, core JS, all 57 routes and their
 > controllers/views (see `ui-scaffold-checklist.md`). Tailwind and axios removed; mockup CSS kept
 > unchanged as `resources/css/mockup.css`.
+>
+> **2026-10-12 — Scaffold Step 1 done:** shared Blade components, `App\Support\DemoData` (the
+> mockup's `BB_DATA` + 13 sample orders), `peso()` helper, enums `OrderStatus` / `OrderType` /
+> `PaymentMethod` *(actual: created before Phase 2)*, demo-only component gallery routes
+> `navigator.components.staff` / `navigator.components.customer` *(actual: not in §4)*.
 
 ---
 

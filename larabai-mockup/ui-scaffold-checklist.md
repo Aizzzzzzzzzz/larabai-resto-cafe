@@ -34,10 +34,17 @@ No database, no auth. Plan and route map: `development-plan.md` §0, §4.
 > but Apache must be reloaded (Laragon → Reload) before it serves the app.
 
 ## Step 1 — Shared components
-- [ ] `x-status-pill` (order statuses → mockup chips), `x-money` (₱ formatting), `x-modal` (with form slot, re-opens on validation error)
-- [ ] `x-stat-card`, `x-empty-state`, `x-order-lines` (qty × name, options text, note, amount), `x-tracker` (progress steps)
-- [ ] `x-confirm-form` (type-to-confirm), `x-art` (drawn glass/plate from item tone)
-- [ ] `App\Support\DemoData` — `BB_DATA` ported to PHP arrays (categories, items + option groups, ingredients, recipes, users, sample orders)
+- [x] `x-status-pill` (order statuses → mockup chips), `x-modal` (real form, `@csrf`, method spoofing, re-opens on validation error), `x-field-error`
+- [x] ₱ formatting *(actual: global `peso()` helper + `App\Support\Format` instead of an `x-money` component — a component adds stray whitespace inside inline text)*
+- [x] `x-stat-card` + `x-delta`, `x-empty-state` (customer) + `x-empty-row` (staff tables), `x-order-lines`, `x-tracker` (class component — COD and cancelled/voided variants)
+- [x] `x-confirm-form` (type-to-confirm) + `data-confirm-twice` buttons (`resources/js/core/confirm.js`), `x-art` (drawn glass/plate)
+- [x] `App\Support\DemoData` — `BB_DATA` ported (categories, 27 items + option groups, 41 ingredients, recipes, option recipes, templates, users, 5 tables)
+      plus 13 sample orders today covering every status, type, payment method, COD and a Senior discount
+- [x] Enums `OrderStatus` (label, chip, tracker rank), `OrderType`, `PaymentMethod` (label, ref prefix) — created early, Phase 2 keeps them
+- [x] Component gallery (demo mode): `/navigator/components` (staff) and `/navigator/components/customer`
+- [x] Tests: `SharedComponentsTest`, `Unit/DemoDataTest` (recipes reference real items/ingredients, totals add up, every status has a sample)
+
+> Verified 2026-10-12: 82 tests pass; galleries return 200 over HTTP; the modal form posts with CSRF and lands with the toast.
 
 ## Step 2 — Customer module (`customer.html`)
 - [ ] QR entry: `/t/{table}` (signed) and `/counter` (signed) start a session and redirect to the menu; no session → "Scan the QR code" gate
