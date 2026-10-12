@@ -1,0 +1,209 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Point of Sale · Brew &amp; Bite Café</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Figtree:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<!-- Screens: cashier.html · cashier.html?view=orders · cashier.html?view=payment · cashier.html?view=receipt -->
+<body data-module="cashier" class="m-staff">
+<template data-view="pos" data-default data-title="Point of Sale · Brew &amp; Bite Café" data-body-class="staff">
+<div class="shell">
+  <aside class="side" id="side"></aside>
+  <div class="work">
+    <header class="work-head">
+      <div><h1>Point of sale</h1><div class="sub">Walk-in and counter orders</div></div>
+      <span class="clock" id="clock"></span>
+    </header>
+
+    <div class="work-body">
+      <div class="pos">
+        <section class="pos-menu">
+          <div class="pos-tools">
+            <input class="input" id="search" type="search" placeholder="Search items" aria-label="Search items">
+            <div class="tabs" id="cats"></div>
+          </div>
+          <div class="grid" id="grid"></div>
+        </section>
+
+        <aside class="panel ticket">
+          <div>
+            <div class="ticket-sec">
+              <div class="seg" role="radiogroup" aria-label="Order type">
+                <label><input type="radio" name="type" value="take-out" checked> Take-out</label>
+                <label><input type="radio" name="type" value="dine-in"> Dine-in</label>
+              </div>
+              <div class="two">
+                <label class="lbl" id="tableWrap" hidden>Table<select class="input" id="table"></select></label>
+              </div>
+            </div>
+          </div>
+          <div class="lines" id="lines"></div>
+          <div class="ticket-foot">
+            <div class="totals" id="totals"></div>
+            <div class="foot-btns">
+              <button class="btn btn-ghost" type="button" id="clear">Clear</button>
+              <button class="btn btn-primary" type="button" id="charge" disabled>Charge</button>
+            </div>
+            <small class="muted" style="font-size:.76rem">Senior citizen and PWD discounts are applied on the payment screen.</small>
+          </div>
+        </aside>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Item options modal -->
+<div class="modal-back" id="modalBack" hidden>
+  <form class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="mTitle">
+    <div class="modal-head"><h2 id="mTitle"></h2><button type="button" class="x-btn" id="mClose" aria-label="Close">×</button></div>
+    <div class="modal-body">
+      <div id="mOpts" style="display:grid;gap:14px"></div>
+      <label class="lbl">Notes for the kitchen<input class="input" id="mNotes" maxlength="120" placeholder="e.g. less ice"></label>
+      <div class="qty-row"><span class="lbl" style="margin-right:6px">Quantity</span>
+        <button type="button" id="mMinus" aria-label="Decrease">−</button><output id="mQty">1</output><button type="button" id="mPlus" aria-label="Increase">+</button></div>
+    </div>
+    <div class="modal-foot">
+      <button type="button" class="btn btn-ghost" id="mCancel">Cancel</button>
+      <button type="submit" class="btn btn-primary" id="mAdd">Add</button>
+    </div>
+  </form>
+</div>
+</template>
+
+<template data-view="orders" data-title="Orders · Brew &amp; Bite Café" data-body-class="staff">
+<div class="shell">
+  <aside class="side" id="side"></aside>
+  <div class="work">
+    <header class="work-head">
+      <div><h1>Orders</h1><div class="sub">QR and counter orders · updates automatically</div></div>
+      <div style="display:flex;gap:10px;align-items:center"><span class="clock" id="clock"></span><a class="btn btn-primary btn-sm" href="cashier.html">+ New counter order</a></div>
+    </header>
+
+    <div class="work-body">
+      <div class="kpis" id="kpis"></div>
+
+      <section class="panel">
+        <div class="panel-head">
+          <div class="tabs" id="tabs"></div>
+          <input class="input" id="search" type="search" placeholder="Search order no." style="max-width:240px" aria-label="Search orders">
+        </div>
+        <div class="tbl-wrap">
+          <table class="tbl">
+            <thead><tr><th>Order</th><th>Type</th><th>Items</th><th class="r">Total</th><th>Payment</th><th>Status</th><th class="r">Actions</th></tr></thead>
+            <tbody id="rows"></tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+  </div>
+</div>
+
+<!-- Cancel / void modal -->
+<div class="modal-back" id="modalBack" hidden>
+  <form class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="mTitle">
+    <div class="modal-head"><h2 id="mTitle"></h2><button type="button" class="x-btn" id="mClose" aria-label="Close">×</button></div>
+    <div class="modal-body">
+      <p id="mText" class="muted" style="font-size:.9rem"></p>
+      <label class="lbl">Reason
+        <select class="input" id="mReason">
+          <option>Customer changed their mind</option>
+          <option>Wrong item entered</option>
+          <option>Item out of stock</option>
+          <option>Duplicate order</option>
+          <option>Customer left without paying</option>
+        </select>
+      </label>
+      <p class="err" id="mErr" hidden style="color:var(--danger);font-size:.85rem"></p>
+    </div>
+    <div class="modal-foot">
+      <button type="button" class="btn btn-ghost" id="mCancel">Keep order</button>
+      <button type="submit" class="btn btn-danger" id="mOk"></button>
+    </div>
+  </form>
+</div>
+</template>
+
+<template data-view="payment" data-title="Take Payment · Brew &amp; Bite Café" data-body-class="staff">
+<div class="shell">
+  <aside class="side" id="side"></aside>
+  <div class="work">
+    <header class="work-head">
+      <div><h1 id="title">Take payment</h1><div class="sub" id="sub"></div></div>
+      <a class="btn btn-ghost btn-sm" href="cashier.html?view=orders">← Back to orders</a>
+    </header>
+
+    <div class="work-body">
+      <div class="panel state" id="state" hidden></div>
+
+      <div class="pay" id="pay" hidden>
+        <section class="panel panel-pad">
+          <div class="meta" id="meta"></div>
+          <div id="items"></div>
+        </section>
+
+        <form class="panel panel-pad" id="form" novalidate>
+          <!-- Senior / PWD -->
+          <label class="switch"><input type="checkbox" id="spOn"> Senior citizen / PWD discount</label>
+          <div id="spFields" hidden style="display:grid;gap:10px">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+              <label class="lbl">Type<select class="input" id="spType"><option>Senior citizen</option><option>PWD</option></select></label>
+              <label class="lbl">ID number<input class="input" id="spId" placeholder="e.g. OSCA-TC-04512"></label>
+              <label class="lbl" style="grid-column:span 2">Name on ID<input class="input" id="spName"></label>
+              <label class="lbl">Eligible persons<input class="input" id="spEligible" type="number" min="1" value="1"></label>
+              <label class="lbl">Total diners sharing<input class="input" id="spDiners" type="number" min="1" value="1"></label>
+            </div>
+            <p class="note" id="spNote"></p>
+          </div>
+
+          <div class="r-sep" style="border-top:1px dashed var(--line)"></div>
+          <div class="sum" id="sum"></div>
+
+          <div class="r-sep" style="border-top:1px dashed var(--line)"></div>
+          <div class="methods" role="radiogroup" aria-label="Payment method">
+            <label><input type="radio" name="method" value="CASH" checked> Cash</label>
+            <label><input type="radio" name="method" value="GCASH"> GCash</label>
+            <label><input type="radio" name="method" value="MAYA"> Maya</label>
+          </div>
+
+          <div id="cashBox" style="display:grid;gap:10px">
+            <label class="lbl">Amount received<input class="input" id="tendered" type="number" min="0" step="0.01" inputmode="decimal" style="font-size:1.2rem;font-family:var(--mono)"></label>
+            <div class="quick" id="quick"></div>
+            <div class="change"><span>Change</span><strong id="change">₱0.00</strong></div>
+          </div>
+          <p class="note" id="walletBox" hidden>Simulated e-wallet payment. The customer scans the café’s QR at the counter; tapping Confirm saves the payment record with a reference number. No real money moves.</p>
+
+          <p class="err" id="err" role="alert" hidden></p>
+          <button class="btn btn-primary confirm" type="submit" id="confirm">Confirm payment</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+</template>
+
+<template data-view="receipt" data-title="Receipt · Brew &amp; Bite Café" data-body-class="staff">
+<div class="shell">
+  <aside class="side" id="side"></aside>
+  <div class="work">
+    <header class="work-head">
+      <div><h1>Receipt</h1><div class="sub" id="sub"></div></div>
+      <span class="clock" id="clock"></span>
+    </header>
+    <div class="work-body">
+      <div class="rc-wrap">
+        <article class="slip" id="slip"></article>
+        <div class="panel panel-pad side-actions no-print" id="actions"></div>
+      </div>
+    </div>
+  </div>
+</div>
+</template>
+
+<script src="js/app.js"></script>
+</body>
+</html>

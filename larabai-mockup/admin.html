@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Dashboard · Brew &amp; Bite Café</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Figtree:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<!-- Screens: admin.html · admin.html?view=menu · admin.html?view=users · admin.html?view=audit -->
+<body data-module="admin" class="m-staff">
+<template data-view="dashboard" data-default data-title="Dashboard · Brew &amp; Bite Café" data-body-class="staff">
+<div class="shell">
+  <aside class="side" id="side"></aside>
+  <div class="work">
+    <header class="work-head">
+      <div><h1 id="greet">Dashboard</h1><div class="sub">Live numbers from paid orders</div></div>
+      <div style="display:flex;gap:10px;align-items:center"><span class="clock" id="clock"></span><a class="btn btn-ghost btn-sm" href="admin.html?view=audit">Audit log</a></div>
+    </header>
+    <div class="work-body">
+      <p class="sample-note">Days before today use generated sample sales so the charts have history. Today’s numbers are real orders from this demo.</p>
+      <div class="kpis" id="kpis"></div>
+
+      <div class="row">
+        <section class="panel panel-pad">
+          <div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap"><h2>Sales, last 14 days</h2><span class="hint">Hover a bar for details · today is highlighted</span></div>
+          <div id="salesChart"></div>
+        </section>
+        <section class="panel panel-pad">
+          <h2>Payment methods</h2>
+          <div><div class="hint" style="margin-bottom:6px">Last 30 days</div><div id="mix30"></div></div>
+          <div><div class="hint" style="margin:6px 0">Today</div><div id="mixToday"></div></div>
+        </section>
+      </div>
+
+      <div class="row">
+        <section class="panel panel-pad">
+          <div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px"><h2>Orders by hour</h2><span class="hint">Average per day, last 7 days</span></div>
+          <div id="hourChart"></div>
+        </section>
+        <section class="panel panel-pad">
+          <div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px"><h2>Best sellers</h2><span class="hint">Last 7 days, by cups/plates sold</span></div>
+          <ol class="rank" id="best"></ol>
+        </section>
+      </div>
+
+      <div class="row">
+        <section class="panel panel-pad">
+          <h2>Recent activity</h2>
+          <ul class="feed" id="feed"></ul>
+          <a class="link-btn" href="admin.html?view=audit" style="font-weight:600;font-size:.88rem">See the full audit log →</a>
+        </section>
+        <section class="panel panel-pad">
+          <h2>Needs attention</h2>
+          <ul class="attn" id="attn"></ul>
+        </section>
+      </div>
+    </div>
+  </div>
+</div>
+</template>
+
+<template data-view="menu" data-title="Menu &amp; Prices · Brew &amp; Bite Café" data-body-class="staff">
+<div class="shell">
+  <aside class="side" id="side"></aside>
+  <div class="work">
+    <header class="work-head">
+      <div><h1>Menu &amp; prices</h1><div class="sub">Each item lists the ingredients it uses; selling it deducts them from Stock</div></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-ghost btn-sm" type="button" id="catsBtn">Categories</button><button class="btn btn-primary btn-sm" type="button" id="addBtn">+ Add item</button></div>
+    </header>
+    <div class="work-body">
+      <section class="panel">
+        <div class="panel-head">
+          <div class="tabs" id="tabs"></div>
+          <input class="input" id="search" type="search" placeholder="Search items" style="max-width:220px" aria-label="Search items">
+        </div>
+        <div class="tbl-wrap"><table class="tbl">
+          <thead><tr><th>Item</th><th>Category</th><th class="r">Price</th><th>Options</th><th>Ingredients per serving</th><th>Availability</th><th></th></tr></thead>
+          <tbody id="rows"></tbody>
+        </table></div>
+      </section>
+    </div>
+  </div>
+</div>
+
+<!-- Item editor -->
+<div class="modal-back" id="itemBack" hidden>
+  <form class="modal wide" id="itemForm" role="dialog" aria-modal="true" aria-labelledby="iTitle" novalidate>
+    <div class="modal-head"><h2 id="iTitle"></h2><button type="button" class="x-btn" data-close aria-label="Close">×</button></div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <label class="lbl full">Name<input class="input" id="iName"></label>
+        <label class="lbl">Category<select class="input" id="iCat"></select></label>
+        <label class="lbl">Price (Medium / single) ₱<input class="input" id="iPrice" type="number" min="0" step="1"></label>
+        <label class="lbl full">Description<textarea class="input" id="iDesc" rows="2"></textarea></label>
+        <label class="lbl" id="iLargeWrap">Large size adds ₱<input class="input" id="iLarge" type="number" min="0" step="1"></label>
+        <label class="lbl" id="iTplWrap">Options<select class="input" id="iTpl"></select></label>
+        <div class="full"><div class="lbl" style="margin-bottom:6px">Labels on the menu</div>
+          <div class="checks"><label><input type="checkbox" id="tBest"> Best seller</label><label><input type="checkbox" id="tNew"> New</label></div></div>
+      </div>
+      <div class="ing-block">
+        <div class="ing-head"><span class="lbl">Ingredients per serving</span><span class="hint">Deducted from Stock each time it sells</span></div>
+        <div class="ing-rows" id="iIngs"></div>
+        <div class="ing-foot"><button type="button" class="btn btn-ghost btn-sm" id="iAddIng">+ Add ingredient</button><span class="hint" id="iCupNote"></span></div>
+      </div>
+      <p class="err-msg" id="iErr" hidden></p>
+    </div>
+    <div class="modal-foot">
+      <button type="button" class="btn btn-danger" id="iDelete" style="margin-right:auto">Remove from menu</button>
+      <button type="button" class="btn btn-ghost" data-close>Cancel</button>
+      <button type="submit" class="btn btn-primary">Save</button>
+    </div>
+  </form>
+</div>
+
+<!-- Categories -->
+<div class="modal-back" id="catBack" hidden>
+  <form class="modal" id="catForm" role="dialog" aria-modal="true" aria-labelledby="cTitle" novalidate>
+    <div class="modal-head"><h2 id="cTitle">Categories</h2><button type="button" class="x-btn" data-close aria-label="Close">×</button></div>
+    <div class="modal-body">
+      <div id="catList"></div>
+      <div style="display:grid;grid-template-columns:1fr auto;gap:8px"><input class="input" id="newCat" placeholder="New category name" aria-label="New category name"><button type="submit" class="btn btn-primary btn-sm">Add</button></div>
+      <p class="err-msg" id="cErr" hidden></p>
+    </div>
+  </form>
+</div>
+</template>
+
+<template data-view="users" data-title="Users &amp; Roles · Brew &amp; Bite Café" data-body-class="staff">
+<div class="shell">
+  <aside class="side" id="side"></aside>
+  <div class="work">
+    <header class="work-head">
+      <div><h1>Users &amp; roles</h1><div class="sub">Who can log in and which screens they can open</div></div>
+      <button class="btn btn-primary btn-sm" type="button" id="addBtn">+ Add user</button>
+    </header>
+    <div class="work-body">
+      <section class="panel">
+        <div class="tbl-wrap"><table class="tbl">
+          <thead><tr><th>User</th><th>Username</th><th>Role</th><th>Status</th><th>Last login</th><th></th></tr></thead>
+          <tbody id="rows"></tbody>
+        </table></div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head"><h2>What each role can do</h2></div>
+        <div class="tbl-wrap"><table class="tbl matrix" id="matrix"></table></div>
+      </section>
+    </div>
+  </div>
+</div>
+
+<div class="modal-back" id="uBack" hidden>
+  <form class="modal" id="uForm" role="dialog" aria-modal="true" aria-labelledby="uTitle" novalidate>
+    <div class="modal-head"><h2 id="uTitle"></h2><button type="button" class="x-btn" data-close aria-label="Close">×</button></div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <label class="lbl full">Full name<input class="input" id="uName" autocomplete="off"></label>
+        <label class="lbl">Username<input class="input" id="uUser" autocomplete="off" style="font-family:var(--mono)"></label>
+        <label class="lbl">Role<select class="input" id="uRole"></select></label>
+        <label class="lbl full"><span id="uPassLbl">Password</span><input class="input" id="uPass" type="text" autocomplete="off"><span class="hint">Demo only: passwords are stored as plain text in this mockup.</span></label>
+        <label class="checkline full"><input type="checkbox" id="uActive" checked> Can log in</label>
+      </div>
+      <p class="err-msg" id="uErr" hidden></p>
+    </div>
+    <div class="modal-foot"><button type="button" class="btn btn-ghost" data-close>Cancel</button><button type="submit" class="btn btn-primary">Save user</button></div>
+  </form>
+</div>
+</template>
+
+<template data-view="audit" data-title="Audit Logs · Brew &amp; Bite Café" data-body-class="staff">
+<div class="shell">
+  <aside class="side" id="side"></aside>
+  <div class="work">
+    <header class="work-head">
+      <div><h1>Audit logs</h1><div class="sub">Every login, payment, discount, void, stock change and setting change</div></div>
+      <button class="btn btn-ghost btn-sm" type="button" id="exportBtn">Export CSV</button>
+    </header>
+    <div class="work-body">
+      <section class="panel">
+        <div class="panel-head">
+          <div class="filters">
+            <select class="input" id="fRange" aria-label="Period"><option value="today">Today</option><option value="7" selected>Last 7 days</option><option value="all">All</option></select>
+            <select class="input" id="fArea" aria-label="Area"></select>
+            <select class="input" id="fUser" aria-label="User"></select>
+            <input class="input" id="fText" type="search" placeholder="Search details, e.g. an order number" style="min-width:240px" aria-label="Search">
+          </div>
+          <span class="hint" id="count"></span>
+        </div>
+        <div class="tbl-wrap"><table class="tbl">
+          <thead><tr><th>When</th><th>User</th><th>Area</th><th>Action</th><th>Details</th></tr></thead>
+          <tbody id="rows"></tbody>
+        </table></div>
+        <div style="padding:12px 16px" id="moreWrap"><button class="btn btn-ghost btn-sm" type="button" id="more">Show more</button></div>
+      </section>
+    </div>
+  </div>
+</div>
+</template>
+
+<script src="js/app.js"></script>
+</body>
+</html>

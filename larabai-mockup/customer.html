@@ -1,0 +1,262 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Menu · Brew &amp; Bite Café</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Figtree:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<!-- Screens: customer.html · customer.html?view=cart · customer.html?view=checkout · customer.html?view=pay · customer.html?view=success · customer.html?view=track -->
+<body data-module="customer" class="m-customer">
+<template data-view="menu" data-default data-title="Menu · Brew &amp; Bite Café" data-body-class="customer">
+<!-- Shown when the page is opened without scanning a table or counter QR -->
+<div class="gate" id="gate" hidden>
+  <div class="gate-card">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7V4a1 1 0 0 1 1-1h3M17 3h3a1 1 0 0 1 1 1v3M21 17v3a1 1 0 0 1-1 1h-3M7 21H4a1 1 0 0 1-1-1v-3"/><rect x="7" y="7" width="4" height="4"/><rect x="13" y="7" width="4" height="4"/><rect x="7" y="13" width="4" height="4"/><path d="M13 13h4v4"/></svg>
+    <h1>Scan the QR code on your table</h1>
+    <p class="muted">Each table has its own QR code so we know where to bring your order. For take-out, scan the QR code at the counter.</p>
+  </div>
+</div>
+
+<div class="app" id="app" hidden>
+  <header class="c-head">
+    <div class="c-head-row">
+      <span class="brand"><span class="brand-mark">B&amp;B</span><span class="brand-name">Brew &amp; Bite Café</span></span>
+      <span class="head-right">
+        <span class="session-pill" id="sessionPill"></span>
+        <button class="theme-toggle" type="button" data-theme-toggle aria-pressed="false" aria-label="Switch to dark mode">
+          <svg class="i-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/></svg>
+          <svg class="i-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+        </button>
+      </span>
+    </div>
+    <div class="c-head-row">
+      <h1>What are you craving today?</h1>
+      <a class="my-orders-link" id="myOrders" href="customer.html?view=track" hidden>My orders</a>
+    </div>
+    <div class="search">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      <input id="search" type="search" placeholder="Search drinks, meals, pastries" autocomplete="off" aria-label="Search the menu">
+    </div>
+  </header>
+
+  <nav class="cat-bar" id="catBar" aria-label="Menu categories"></nav>
+
+
+  <main id="menu"></main>
+  <p class="empty-search" id="noResults" hidden>No items match your search.</p>
+</div>
+
+<div class="cart-bar" id="cartBar" hidden>
+  <a href="customer.html?view=cart">
+    <span><span class="cart-count" id="cartCount">0</span>View your order</span>
+    <span class="num" id="cartTotal">₱0</span>
+  </a>
+</div>
+
+<!-- Item detail sheet -->
+<div class="sheet-backdrop" id="sheetBackdrop" hidden></div>
+<form class="sheet" id="sheet" hidden aria-modal="true" role="dialog" aria-labelledby="sheetTitle">
+  <div class="sheet-scroll">
+    <div class="sheet-hero" id="sheetHero">
+      <button class="sheet-close" type="button" id="sheetClose" aria-label="Close">×</button>
+    </div>
+    <div class="sheet-info">
+      <h2 id="sheetTitle"></h2>
+      <p id="sheetDesc"></p>
+      <span class="m-price" id="sheetBase"></span>
+    </div>
+    <div id="sheetOptions"></div>
+    <div class="notes">
+      <label for="sheetNotes">Notes for the kitchen <span class="muted" style="font-weight:400">(optional)</span></label>
+      <textarea id="sheetNotes" maxlength="120" placeholder="e.g. less ice, no onions"></textarea>
+    </div>
+  </div>
+  <div class="sheet-foot">
+    <div class="stepper">
+      <button type="button" id="qtyMinus" aria-label="Decrease quantity">−</button>
+      <output id="qty">1</output>
+      <button type="button" id="qtyPlus" aria-label="Increase quantity">+</button>
+    </div>
+    <button class="btn btn-primary" type="submit" id="sheetAdd">Add to order</button>
+  </div>
+</form>
+</template>
+
+<template data-view="cart" data-title="Your order · Brew &amp; Bite Café" data-body-class="customer">
+<div class="app">
+  <header class="c-bar">
+    <a class="c-back" href="customer.html" aria-label="Back to menu">←</a>
+    <h1>Your order</h1>
+    <span class="session-pill" id="sessionPill"></span>
+  </header>
+
+  <div class="empty" id="empty" hidden>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 9h12v5a5 5 0 0 1-5 5h-2a5 5 0 0 1-5-5z"/><path d="M17 10h1.5a2.5 2.5 0 0 1 0 5H17"/></svg>
+    <h2>Your order is empty</h2>
+    <p class="muted">Add a drink or a meal from the menu to get started.</p>
+    <a class="btn btn-primary" href="customer.html">Browse the menu</a>
+  </div>
+
+  <div class="pad" id="content" hidden>
+    <div class="card">
+      <div class="card-head"><h2>Items</h2><a class="link-btn" href="customer.html">+ Add more</a></div>
+      <div id="lines"></div>
+    </div>
+
+    <div class="card">
+      <div class="sum">
+        <div><span>Subtotal</span><span id="subtotal"></span></div>
+        <div class="fine"><span>A delivery fee is added at checkout for delivery orders.</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="action-bar" id="actionBar" hidden>
+  <a class="btn btn-primary" href="customer.html?view=checkout" id="toCheckout">Continue to checkout</a>
+</div>
+</template>
+
+<template data-view="checkout" data-title="Checkout · Brew &amp; Bite Café" data-body-class="customer">
+<form class="app" id="form" novalidate>
+  <header class="c-bar">
+    <a class="c-back" href="customer.html?view=cart" aria-label="Back to your order">←</a>
+    <h1>Checkout</h1>
+    <span class="session-pill" id="sessionPill"></span>
+  </header>
+
+  <div class="pad">
+    <p class="msg ok" id="cartNote" hidden></p>
+    <p class="msg bad" id="detailsErr" role="alert" hidden></p>
+    <!-- Order type -->
+    <section class="card">
+      <h2>How do you want it?</h2>
+      <div class="choices" id="types"></div>
+    </section>
+
+    <!-- Only for delivery -->
+    <section class="card" id="deliveryFields" hidden>
+      <h2>Delivery address</h2>
+      <div>
+        <div class="field"><label for="address">Address</label><textarea id="address" rows="2" placeholder="House no., street, barangay"></textarea></div>
+        <div class="field" style="margin-top:10px"><label for="landmark">Landmark <span class="muted" style="font-weight:400">(optional)</span></label><input id="landmark" placeholder="e.g. beside the barangay hall"></div>
+      </div>
+    </section>
+
+    <!-- Payment method -->
+    <section class="card">
+      <h2>Payment method</h2>
+      <div class="choices" id="methods"></div>
+    </section>
+
+    <!-- Summary -->
+    <section class="card">
+      <div class="card-head"><h2>Order summary</h2><a class="link-btn" href="customer.html?view=cart">Edit</a></div>
+      <div id="items" style="display:grid;gap:8px"></div>
+      <div class="r-sep"></div>
+      <div class="sum" id="sum"></div>
+    </section>
+  </div>
+
+  <div class="action-bar">
+    <button class="btn btn-primary" type="submit" id="submit">Place order</button>
+    <small id="submitHint"></small>
+  </div>
+</form>
+</template>
+
+<template data-view="pay" data-title="Payment · Brew &amp; Bite Café" data-body-class="customer">
+<div class="app" style="padding-bottom:0">
+  <div class="wallet">
+    <div class="wallet-top" id="top">
+      <div class="row">
+        <strong id="walletName" style="font-family:var(--display);font-size:1.2rem"></strong>
+        <span class="sim-tag">SIMULATED</span>
+      </div>
+      <small>Pay merchant</small>
+    </div>
+
+    <div class="wallet-card">
+      <div class="wallet-amt">
+        <small>You are paying</small>
+        <strong id="amount"></strong>
+        <small>to <b>Brew &amp; Bite Café</b> · Tarlac City</small>
+      </div>
+      <div class="r-sep"></div>
+      <dl class="kv">
+        <dt>Order</dt><dd id="orderType"></dd>
+        <dt>Items</dt><dd id="itemCount"></dd>
+        <dt>Account</dt><dd id="account"></dd>
+        <dt>Date</dt><dd id="when"></dd>
+      </dl>
+      <p class="wallet-note">This is a simulated payment for the demo. No real money moves and no payment provider is contacted. Tapping Pay saves the payment record and marks your order as paid.</p>
+    </div>
+
+    <div class="wallet-foot">
+      <button class="btn" type="button" id="payBtn"></button>
+      <a class="btn btn-ghost" href="customer.html?view=checkout" id="cancelBtn">Cancel and go back</a>
+    </div>
+  </div>
+</div>
+</template>
+
+<template data-view="success" data-title="Order placed · Brew &amp; Bite Café" data-body-class="customer">
+<div class="app" style="padding-bottom:150px">
+  <header class="c-bar">
+    <a class="c-back" href="customer.html" aria-label="Back to menu">←</a>
+    <h1>Receipt</h1>
+    <span class="session-pill" id="sessionPill"></span>
+  </header>
+
+  <div class="done-hero" id="done"></div>
+
+  <div class="pad">
+    <article class="receipt" id="receipt"></article>
+  </div>
+</div>
+
+<div class="action-bar">
+  <a class="btn btn-primary" id="trackBtn" href="customer.html?view=track">Track my order</a>
+  <a class="btn btn-ghost" href="customer.html">Order something else</a>
+</div>
+</template>
+
+<template data-view="track" data-title="Track order · Brew &amp; Bite Café" data-body-class="customer">
+<div class="app">
+  <header class="c-bar">
+    <a class="c-back" href="customer.html" aria-label="Back to menu">←</a>
+    <h1>My orders</h1>
+    <span class="session-pill" id="sessionPill"></span>
+  </header>
+
+  <div class="empty" id="empty" hidden>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 8h6M9 12h6M9 16h3"/></svg>
+    <h2>No orders yet</h2>
+    <p class="muted">Orders you place from this phone will show up here.</p>
+    <a class="btn btn-primary" href="customer.html">Browse the menu</a>
+  </div>
+
+  <div id="content" hidden>
+    <nav class="order-tabs" id="tabs" aria-label="Your orders"></nav>
+    <div class="track-hero" id="hero" style="margin-top:12px"></div>
+    <div class="pad">
+      <section class="card"><h2>Progress</h2><ol class="timeline" id="timeline"></ol></section>
+      <section class="card">
+        <div class="card-head"><h2>Order details</h2><a class="link-btn" id="receiptLink" href="#">View receipt</a></div>
+        <div class="r-meta" id="meta"></div>
+        <div class="r-sep"></div>
+        <div id="items" style="display:grid;gap:8px"></div>
+      </section>
+      <div class="btn-row" id="actions"></div>
+    </div>
+  </div>
+</div>
+</template>
+
+<script src="js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Stock · Brew &amp; Bite Café</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Figtree:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<!-- Screens: inventory.html (stock levels, low-stock alerts, restocking) -->
+<body data-module="inventory" class="m-staff">
+<template data-view="ingredients" data-default data-title="Stock · Brew &amp; Bite Café" data-body-class="staff">
+<div class="shell">
+  <aside class="side" id="side"></aside>
+  <div class="work">
+    <header class="work-head">
+      <div><h1>Stock</h1><div class="sub">Ingredients are deducted automatically as orders are paid</div></div>
+      <div style="display:flex;gap:10px;align-items:center"><span class="clock" id="clock"></span><button class="btn btn-primary btn-sm" type="button" id="addBtn">+ Add ingredient</button></div>
+    </header>
+
+    <div class="work-body">
+      <div class="kpis" id="kpis"></div>
+      <section class="impact" id="impact" hidden aria-live="polite"></section>
+
+      <section class="panel">
+        <div class="panel-head">
+          <div class="tabs" id="tabs"></div>
+          <div class="toolbar">
+            <select class="input" id="cat" aria-label="Category"></select>
+            <input class="input" id="search" type="search" placeholder="Search ingredients" aria-label="Search ingredients">
+          </div>
+        </div>
+        <div class="tbl-wrap">
+          <table class="tbl">
+            <thead><tr><th>Ingredient</th><th>In stock</th><th class="r">Reorder at</th><th class="r">Stock value</th><th>Status</th><th class="r"></th></tr></thead>
+            <tbody id="rows"></tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+  </div>
+</div>
+
+<!-- Restock -->
+<div class="modal-back" id="restockBack" hidden>
+  <form class="modal" id="restockForm" role="dialog" aria-modal="true" aria-labelledby="rTitle" novalidate>
+    <div class="modal-head"><h2 id="rTitle">Restock</h2><button type="button" class="x-btn" data-close aria-label="Close">×</button></div>
+    <div class="modal-body">
+      <p class="hint" id="rOnHand"></p>
+      <div class="seg" role="radiogroup" aria-label="What happened">
+        <label><input type="radio" name="rMode" value="add" checked> Add a delivery</label>
+        <label><input type="radio" name="rMode" value="count"> Set counted amount</label>
+      </div>
+      <label class="lbl"><span id="rQtyLbl">Quantity received</span><span class="unit-input"><input class="input" id="rQty" type="number" min="0" step="any"><span id="rUnit"></span></span></label>
+      <label class="lbl">Note (optional)<input class="input" id="rNote" placeholder="e.g. delivered by Central Luzon Dairy"></label>
+      <p class="preview" id="rPreview"></p>
+      <p class="err-msg" id="rErr" hidden></p>
+    </div>
+    <div class="modal-foot">
+      <button type="button" class="btn btn-ghost" data-close>Cancel</button>
+      <button type="submit" class="btn btn-primary">Save</button>
+    </div>
+  </form>
+</div>
+
+<!-- Add / edit -->
+<div class="modal-back" id="editBack" hidden>
+  <form class="modal" id="editForm" role="dialog" aria-modal="true" aria-labelledby="eTitle" novalidate>
+    <div class="modal-head"><h2 id="eTitle">Add ingredient</h2><button type="button" class="x-btn" data-close aria-label="Close">×</button></div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <label class="lbl full">Name<input class="input" id="eName" required></label>
+        <label class="lbl">Category<input class="input" id="eCat" list="catList" required></label>
+        <label class="lbl">Unit<select class="input" id="eUnit"><option value="g">grams (g)</option><option value="ml">milliliters (ml)</option><option value="pc">pieces (pc)</option></select></label>
+        <label class="lbl">Reorder level<input class="input" id="eReorder" type="number" min="0" step="any"></label>
+        <label class="lbl">Usual restock quantity<input class="input" id="eReorderQty" type="number" min="0" step="any"></label>
+        <label class="lbl full">Cost per unit (₱)<input class="input" id="eCost" type="number" min="0" step="0.001"></label>
+        <label class="lbl full" id="eStockWrap">Opening stock<input class="input" id="eStock" type="number" min="0" step="any" value="0"><span class="hint">Use Restock to add stock later.</span></label>
+      </div>
+      <datalist id="catList"></datalist>
+      <p class="err-msg" id="eErr" hidden></p>
+    </div>
+    <div class="modal-foot">
+      <button type="button" class="btn btn-ghost" data-close>Cancel</button>
+      <button type="submit" class="btn btn-primary">Save</button>
+    </div>
+  </form>
+</div>
+
+<!-- History -->
+<div class="modal-back" id="histBack" hidden>
+  <div class="modal wide" role="dialog" aria-modal="true" aria-labelledby="hTitle">
+    <div class="modal-head"><h2 id="hTitle"></h2><button type="button" class="x-btn" data-close aria-label="Close">×</button></div>
+    <div class="modal-body" id="histBody"></div>
+  </div>
+</div>
+</template>
+
+<script src="js/app.js"></script>
+</body>
+</html>
