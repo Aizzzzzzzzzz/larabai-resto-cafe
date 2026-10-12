@@ -9,6 +9,7 @@ import { initClock } from './core/clock';
 import { initConfirm } from './core/confirm';
 import { initCustomer } from './modules/customer';
 import { initCashier } from './modules/cashier';
+import { initKitchen } from './modules/kitchen';
 
 initTheme();
 initToast();
@@ -17,3 +18,4 @@ initClock();
 initConfirm();
 initCustomer();
 initCashier();
+initKitchen();

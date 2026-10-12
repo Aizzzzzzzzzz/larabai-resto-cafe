@@ -27,6 +27,9 @@
 > **2026-10-12 — Scaffold Step 3 done:** cashier module. *(actual: `App\Services\Pricing` built now
 > instead of Phase 2 — the payment form needs the discount on the server; `App\Support\CashierActions`
 > holds the per-stage row actions until `OrderWorkflow` replaces it; `DiscountType` enum added.)*
+>
+> **2026-10-12 — Scaffold Step 4 done:** kitchen display. *(actual: `KitchenActions` rules, state-table
+> row 9b, board refreshed by swapping server-rendered partials every 5 s.)*
 
 ---
 
@@ -219,6 +222,7 @@ Taken from spec §3–§5.4 and the mockup's actual buttons (`app.js` cashier/ki
 | 7 | `preparing` | `ready` | Kitchen | Ready | audit "Marked ready" |
 | 8 | `ready` | `completed` | Cashier (served / picked up / delivered) or Kitchen (done) | Mark served/picked up/delivered · Done | — |
 | 9 | `completed` | `ready` | Kitchen | Recall (↺ "Recently done") | audit "Recalled order" |
+| 9b | `ready` | `preparing` | Kitchen | Recall (on a Ready ticket) | — *(actual: added in scaffold Step 4 — the mockup has it)* |
 | 10 | `paid` · `preparing` | `voided` | Cashier | Void (reason required) | payment → VOIDED, return stock, audit |
 | — | COD (any kitchen stage) | (status unchanged) | Cashier | Collect COD payment | payment PAID, `paid_at`; **COD cannot reach `completed` unpaid** *(rule added — mockup allows "Mark delivered" before collecting)* |
 

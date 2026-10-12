@@ -10,7 +10,7 @@ use Tests\TestCase;
 /**
  * UI scaffold check (ui-scaffold-checklist.md): every screen opens, every form route answers
  * with the "nothing is saved" toast. Replaced module by module by real feature tests
- * (tests/Feature/Customer, tests/Feature/Cashier).
+ * (tests/Feature/Customer, Cashier, Kitchen).
  */
 class ScaffoldRoutesTest extends TestCase
 {
@@ -22,8 +22,6 @@ class ScaffoldRoutesTest extends TestCase
             'components (staff)' => ['navigator.components.staff'],
             'components (customer)' => ['navigator.components.customer'],
             'login' => ['login'],
-            'kitchen display' => ['kitchen.display'],
-            'kitchen board poll' => ['kitchen.board'],
             'inventory stock' => ['inventory.ingredients.index'],
             'inventory history' => ['inventory.ingredients.history', ['ingredient' => 'milk']],
             'admin dashboard' => ['admin.dashboard'],
@@ -41,8 +39,6 @@ class ScaffoldRoutesTest extends TestCase
         return [
             'login' => ['post', 'login.store'],
             'logout' => ['post', 'logout'],
-            'kitchen status' => ['patch', 'kitchen.orders.status', ['order' => 'demo']],
-            'kitchen sold out' => ['patch', 'kitchen.availability.update', ['menuItem' => 'latte']],
             'ingredient add' => ['post', 'inventory.ingredients.store'],
             'ingredient edit' => ['put', 'inventory.ingredients.update', ['ingredient' => 'milk']],
             'restock' => ['post', 'inventory.ingredients.restock', ['ingredient' => 'milk']],

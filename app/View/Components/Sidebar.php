@@ -3,6 +3,7 @@
 namespace App\View\Components;
 
 use App\Enums\Role;
+use App\Support\CurrentStaff;
 use App\Support\DemoData;
 use App\Support\StockLevel;
 use Illuminate\View\Component;
@@ -49,8 +50,8 @@ class Sidebar extends Component
      */
     public function __construct(public string $active = '', public ?array $badges = null)
     {
-        $this->user = session('demo_staff', ['name' => 'Maria Dizon', 'role' => Role::Admin->value]);
-        $this->role = Role::from($this->user['role']);
+        $this->user = CurrentStaff::get();
+        $this->role = CurrentStaff::role();
         $this->badges ??= self::liveBadges();
 
         $groups = array_filter(self::NAV, fn ($g) => in_array($this->role, $g['roles'], true));

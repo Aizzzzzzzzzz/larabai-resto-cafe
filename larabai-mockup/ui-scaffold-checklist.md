@@ -80,9 +80,18 @@ No database, no auth. Plan and route map: `development-plan.md` §0, §4.
 > tap-twice state class `.btn.confirm` clashed with the mockup's payment button class — renamed to `.btn.armed`.
 
 ## Step 4 — Kitchen module (`kitchen.html`)
-- [ ] Board: New / Preparing / Ready columns, ticket details, time since, COD flag; Start / Back / Ready / Done as forms
-- [ ] Recently done strip with Recall; per-line done ticks (localStorage); availability drawer with sold-out switches (PATCH)
-- [ ] Dark by default, own theme setting; board partial route for polling
+- [x] Board: New / Preparing / Ready columns (oldest first), ticket details, live timers (warn 10 min, late 15 min), COD flag;
+      Start / Back / Mark ready / Served · Picked up · Handed to rider / Recall as PATCH forms, rules in `App\Support\KitchenActions` (controller → 403)
+- [x] Recently done strip with Recall; per-line ticks (localStorage, survive refresh); sold-out drawer — each switch is a form
+      submitted on change, page returns with the drawer open (`?drawer=1`)
+- [x] Dark by default, own theme setting; header stats (in queue, avg prep, done today); sound + full screen;
+      board parts re-fetched every 5 s from `kitchen.board` and swapped by `[data-k-part]`, beep when New grows
+- [x] Rule from plan §3: unpaid cash on delivery in Ready shows "Waiting for cash on delivery" instead of a Done button;
+      `recall` also moves Ready → Preparing (mockup) *(actual: add this transition to the plan's state table)*
+- [x] `App\Support\CurrentStaff` (demo user for sidebar + kitchen header until Phase 0)
+
+> Verified 2026-10-12: 103 tests pass (`tests/Feature/Kitchen/KitchenTest.php`); 10 headless-Edge checks (timers, line tick
+> surviving the 5 s refresh, drawer switch, Start posts back with toast); screenshot matches the mockup.
 
 ## Step 5 — Inventory module (`inventory.html`)
 - [ ] Stock list: tabs (All / Low / Out), category filter, search, value, status, "can't be made" banner, summary cards
