@@ -461,6 +461,8 @@ erDiagram
 
 ### 5.2 Functional Decomposition Diagram
 
+#### 5.2.1 System Level
+
 ```mermaid
 flowchart TD
     S["Brew & Bite Café<br/>Ordering System"]
@@ -501,7 +503,170 @@ flowchart TD
     A --> A4["5.4 View and export audit logs"]
 ```
 
-*Figure 5.2 – Functional Decomposition Diagram*
+*Figure 5.2 – Functional Decomposition Diagram (system level)*
+
+#### 5.2.2 Module Level
+
+The diagrams below break each function from Figure 5.2 down into the tasks the system performs.
+
+```mermaid
+flowchart LR
+    C["1.0 Customer<br/>Ordering"]
+    C --> C1["1.1 Scan table or<br/>counter QR"]
+    C --> C2["1.2 Browse and customize<br/>menu items"]
+    C --> C3["1.3 Manage cart"]
+    C --> C4["1.4 Check out"]
+    C --> C5["1.5 Pay via GCash / Maya<br/>(simulated) or cash"]
+    C --> C6["1.6 View receipt and<br/>track order"]
+
+    C1 --> C11["1.1.1 Read table number<br/>from table QR (dine-in)"]
+    C1 --> C12["1.1.2 Start take-out or delivery<br/>session from counter QR"]
+    C1 --> C13["1.1.3 Clear cart when the<br/>session changes"]
+
+    C2 --> C21["1.2.1 View items by category<br/>and search"]
+    C2 --> C22["1.2.2 Show sold-out items<br/>as unavailable"]
+    C2 --> C23["1.2.3 Choose size, temperature,<br/>sugar level and add-ons"]
+    C2 --> C24["1.2.4 Add note and quantity,<br/>add to cart"]
+
+    C3 --> C31["1.3.1 Change quantity or<br/>remove items"]
+    C3 --> C32["1.3.2 Update changed prices and<br/>drop removed items"]
+
+    C4 --> C41["1.4.1 Choose dine-in, take-out<br/>or delivery"]
+    C4 --> C42["1.4.2 Enter delivery address<br/>(delivery only, + ₱50 fee)"]
+    C4 --> C43["1.4.3 Choose payment method"]
+    C4 --> C44["1.4.4 Create order with<br/>order number"]
+
+    C5 --> C51["1.5.1 Confirm amount on<br/>simulated wallet screen"]
+    C5 --> C52["1.5.2 Save payment record<br/>and reference number"]
+    C5 --> C53["1.5.3 Set order to Paid and<br/>send to kitchen"]
+    C5 --> C54["1.5.4 Leave cash orders as<br/>Awaiting payment / COD"]
+
+    C6 --> C61["1.6.1 Show success screen<br/>and receipt"]
+    C6 --> C62["1.6.2 Show live order status"]
+    C6 --> C63["1.6.3 List orders placed<br/>on this phone"]
+```
+
+*Figure 5.2a – Functional Decomposition: Customer Ordering*
+
+```mermaid
+flowchart LR
+    K["2.0 Cashier / POS"]
+    K --> K1["2.1 Log in"]
+    K --> K2["2.2 Take counter orders"]
+    K --> K3["2.3 Accept payments<br/>and COD"]
+    K --> K4["2.4 Apply Senior/PWD<br/>discount"]
+    K --> K5["2.5 Print receipt"]
+    K --> K6["2.6 Complete or void<br/>orders"]
+
+    K1 --> K11["2.1.1 Enter username<br/>and password"]
+    K1 --> K12["2.1.2 Check role and open<br/>the role's home screen"]
+
+    K2 --> K21["2.2.1 Select items<br/>and options"]
+    K2 --> K22["2.2.2 Set order type<br/>and table number"]
+    K2 --> K23["2.2.3 Charge order"]
+
+    K3 --> K31["2.3.1 Choose cash, GCash<br/>or Maya"]
+    K3 --> K32["2.3.2 Enter cash tendered<br/>and compute change"]
+    K3 --> K33["2.3.3 Save payment record<br/>and reference number"]
+
+    K4 --> K41["2.4.1 Enter ID type<br/>and ID number"]
+    K4 --> K42["2.4.2 Enter eligible persons<br/>and number of diners"]
+    K4 --> K43["2.4.3 Remove VAT and take 20%<br/>off the eligible share"]
+
+    K5 --> K51["2.5.1 Show receipt with<br/>payment details"]
+    K5 --> K52["2.5.2 Print receipt"]
+
+    K6 --> K61["2.6.1 Mark served, picked up<br/>or delivered"]
+    K6 --> K62["2.6.2 Void order with a reason"]
+    K6 --> K63["2.6.3 Return ingredients<br/>to stock"]
+```
+
+*Figure 5.2b – Functional Decomposition: Cashier / POS*
+
+```mermaid
+flowchart LR
+    KD["3.0 Kitchen"]
+    KD --> KD1["3.1 View incoming<br/>orders"]
+    KD --> KD2["3.2 Update order<br/>status"]
+    KD --> KD3["3.3 Mark items<br/>sold out"]
+
+    KD1 --> KD11["3.1.1 Show paid and COD orders<br/>as New tickets"]
+    KD1 --> KD12["3.1.2 Show table or order type,<br/>items, options and notes"]
+    KD1 --> KD13["3.1.3 Show time since<br/>the order came in"]
+
+    KD2 --> KD21["3.2.1 Move ticket<br/>to Preparing"]
+    KD2 --> KD22["3.2.2 Move ticket to Ready"]
+    KD2 --> KD23["3.2.3 Update the customer's<br/>order tracker"]
+
+    KD3 --> KD31["3.3.1 Mark item sold out"]
+    KD3 --> KD32["3.3.2 Mark item available again"]
+```
+
+*Figure 5.2c – Functional Decomposition: Kitchen*
+
+```mermaid
+flowchart LR
+    I["4.0 Inventory"]
+    I --> I1["4.1 Monitor stock<br/>levels"]
+    I --> I2["4.2 Low-stock alerts"]
+    I --> I3["4.3 Auto-deduct<br/>ingredients"]
+    I --> I4["4.4 Restock / record<br/>counts"]
+    I --> I5["4.5 Manage ingredients"]
+    I --> I6["4.6 View stock history"]
+
+    I1 --> I11["4.1.1 List ingredients with<br/>stock and status"]
+    I1 --> I12["4.1.2 Filter by category<br/>and search"]
+    I1 --> I13["4.1.3 Compute stock value"]
+
+    I2 --> I21["4.2.1 Count low and<br/>out-of-stock ingredients"]
+    I2 --> I22["4.2.2 List menu items that<br/>can no longer be made"]
+    I2 --> I23["4.2.3 Show those items<br/>as sold out"]
+
+    I3 --> I31["4.3.1 Deduct ingredients per<br/>serving when paid"]
+    I3 --> I32["4.3.2 Deduct cup, lid and<br/>add-on ingredients"]
+    I3 --> I33["4.3.3 Return ingredients when<br/>an order is voided"]
+
+    I4 --> I41["4.4.1 Add a delivery"]
+    I4 --> I42["4.4.2 Set counted amount"]
+    I4 --> I43["4.4.3 Preview stock before<br/>and after"]
+
+    I5 --> I51["4.5.1 Add ingredient with<br/>opening stock"]
+    I5 --> I52["4.5.2 Edit unit, cost and<br/>reorder level"]
+
+    I6 --> I61["4.6.1 List sales, returns,<br/>purchases and adjustments"]
+    I6 --> I62["4.6.2 Show before and after<br/>amounts and staff"]
+```
+
+*Figure 5.2d – Functional Decomposition: Inventory*
+
+```mermaid
+flowchart LR
+    A["5.0 Administration"]
+    A --> A1["5.1 Sales dashboard"]
+    A --> A2["5.2 Manage menu, prices<br/>and ingredients"]
+    A --> A3["5.3 Manage users<br/>and roles"]
+    A --> A4["5.4 View and export<br/>audit logs"]
+
+    A1 --> A11["5.1.1 Compare today's sales with<br/>the same time last week"]
+    A1 --> A12["5.1.2 Chart sales for 14 days<br/>and orders by hour"]
+    A1 --> A13["5.1.3 Show payment methods<br/>and best sellers"]
+    A1 --> A14["5.1.4 List items that<br/>need attention"]
+
+    A2 --> A21["5.2.1 Add, edit or remove<br/>menu items"]
+    A2 --> A22["5.2.2 Manage categories"]
+    A2 --> A23["5.2.3 Set price, options<br/>and labels"]
+    A2 --> A24["5.2.4 List ingredients used<br/>per serving"]
+
+    A3 --> A31["5.3.1 Add or edit<br/>staff accounts"]
+    A3 --> A32["5.3.2 Assign roles"]
+    A3 --> A33["5.3.3 Change password or<br/>deactivate account"]
+
+    A4 --> A41["5.4.1 Filter by period,<br/>module and user"]
+    A4 --> A42["5.4.2 Search actions"]
+    A4 --> A43["5.4.3 Export to CSV"]
+```
+
+*Figure 5.2e – Functional Decomposition: Administration*
 
 ### 5.3 Use Case Diagram
 
