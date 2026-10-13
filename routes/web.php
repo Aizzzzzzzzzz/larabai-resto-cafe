@@ -103,6 +103,9 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin'])->grou
 
     Route::resource('users', Admin\UserController::class)->only(['index', 'store', 'update']);
 
+    Route::get('/branding', [Admin\BrandingController::class, 'edit'])->name('branding.edit');
+    Route::put('/branding', [Admin\BrandingController::class, 'update'])->name('branding.update');
+
     Route::get('/audit-logs', [Admin\AuditLogController::class, 'index'])->name('audit-logs.index');
     Route::get('/audit-logs/export', [Admin\AuditLogController::class, 'export'])->name('audit-logs.export');
 

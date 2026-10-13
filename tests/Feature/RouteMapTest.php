@@ -71,6 +71,8 @@ class RouteMapTest extends TestCase
         'admin.users.index' => 'GET admin/users',
         'admin.users.store' => 'POST admin/users',
         'admin.users.update' => 'PUT admin/users/{user}',
+        'admin.branding.edit' => 'GET admin/branding',
+        'admin.branding.update' => 'PUT admin/branding',
         'admin.audit-logs.index' => 'GET admin/audit-logs',
         'admin.audit-logs.export' => 'GET admin/audit-logs/export',
         'admin.demo-reset.show' => 'GET admin/demo-reset',
@@ -89,7 +91,7 @@ class RouteMapTest extends TestCase
         }
 
         $this->assertEqualsCanonicalizing(self::EXPECTED, $actual, 'route:list no longer matches development-plan.md §4');
-        $this->assertCount(58, $actual);
+        $this->assertCount(60, $actual);
     }
 
     public function test_every_route_name_in_the_plan_table_exists(): void

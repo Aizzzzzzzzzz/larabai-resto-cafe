@@ -6,7 +6,7 @@
     <header class="topbar">
         <div class="container">
             <a class="brand" href="{{ route('navigator') }}">
-                <span class="brand-mark">LB</span>
+                <x-brand-mark />
                 <span class="brand-name">LaraBai Baristro</span>
             </a>
             <div class="topbar-right">

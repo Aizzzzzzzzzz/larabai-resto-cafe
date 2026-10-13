@@ -6,7 +6,7 @@
 @section('content')
     <nav class="nav" aria-label="Main">
         <div class="container">
-            <a class="brand" href="{{ route('home') }}"><span class="brand-mark">LB</span><span class="brand-name">{{ config('cafe.name') }}</span></a>
+            <a class="brand" href="{{ route('home') }}"><x-brand-mark /><span class="brand-name">{{ config('cafe.name') }}</span></a>
             <ul>
                 <li><a href="#about">About</a></li>
                 <li><a href="#favorites">Favorites</a></li>
@@ -162,7 +162,7 @@
 
     <footer>
         <div class="container">
-            <span class="brand"><span class="brand-mark">LB</span><span class="brand-name">{{ config('cafe.name') }}</span></span>
+            <span class="brand"><x-brand-mark /><span class="brand-name">{{ config('cafe.name') }}</span></span>
             <small>© {{ now()->year }} {{ config('cafe.name') }} · A fictional café for a case study</small>
         </div>
     </footer>

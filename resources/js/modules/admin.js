@@ -28,6 +28,23 @@ function initUserForm() {
     refresh();
 }
 
+// ---- Logo: preview the picture before saving ---------------------------------------------------
+function initBranding() {
+    const input = document.querySelector('[data-logo-input]');
+    if (!input) return;
+    const box = document.querySelector('[data-logo-chosen]');
+    const img = document.querySelector('[data-logo-chosen-img]');
+    let url = null;
+
+    input.addEventListener('change', () => {
+        if (url) URL.revokeObjectURL(url);
+        const file = input.files[0];
+        url = file ? URL.createObjectURL(file) : null;
+        box.hidden = !url;
+        if (url) img.src = url;
+    });
+}
+
 // ---- Menu & prices: the item editor -------------------------------------------------------------
 function initItemEditor() {
     const form = document.querySelector('[data-item-form]');

@@ -10,7 +10,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <meta name="robots" content="noindex">
     <title>@yield('title') · {{ config('cafe.name') }}</title>
-    <link rel="icon" href="{{ asset('favicon.svg') }}" type="image/svg+xml">
+    @php($logo = \App\Services\Branding::logoUrl())
+    <link rel="icon" href="{{ $logo ?? asset('favicon.svg') }}" @unless ($logo) type="image/svg+xml" @endunless>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Figtree:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
@@ -26,7 +27,7 @@
 </head>
 <body data-module="error" class="v-error-page">
     <main class="error-page">
-        <a class="brand" href="{{ url('/') }}"><span class="brand-mark">LB</span><span class="brand-name">{{ config('cafe.name') }}</span></a>
+        <a class="brand" href="{{ url('/') }}"><x-brand-mark /><span class="brand-name">{{ config('cafe.name') }}</span></a>
         <p class="error-code">@yield('code')</p>
         <h1>@yield('title')</h1>
         <p class="error-text">@yield('text')</p>

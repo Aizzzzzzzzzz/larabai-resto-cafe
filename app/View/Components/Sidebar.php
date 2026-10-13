@@ -34,6 +34,7 @@ class Sidebar extends Component
             ['id' => 'menu', 'label' => 'Menu & prices', 'route' => 'admin.menu-items.index'],
             ['id' => 'users', 'label' => 'Users & roles', 'route' => 'admin.users.index'],
             ['id' => 'audit', 'label' => 'Audit logs', 'route' => 'admin.audit-logs.index'],
+            ['id' => 'branding', 'label' => 'Logo', 'route' => 'admin.branding.edit'],
         ]],
     ];
 

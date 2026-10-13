@@ -1,5 +1,5 @@
 <aside class="side" id="side">
-    <a class="brand" href="{{ route('navigator') }}"><span class="brand-mark">LB</span><span class="brand-name">LaraBai Baristro</span></a>
+    <a class="brand" href="{{ route('navigator') }}"><x-brand-mark /><span class="brand-name">LaraBai Baristro</span></a>
 
     @foreach ($groups as $group)
         <nav class="side-group" aria-label="{{ $group['group'] }}">

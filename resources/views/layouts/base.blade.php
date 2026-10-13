@@ -10,7 +10,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', config('cafe.name'))</title>
-    <link rel="icon" href="{{ asset('favicon.svg') }}" type="image/svg+xml">
+    @php($logo = \App\Services\Branding::logoUrl())
+    <link rel="icon" href="{{ $logo ?? asset('favicon.svg') }}" @unless ($logo) type="image/svg+xml" @endunless>
     @hasSection('description')
         <meta name="description" content="@yield('description')">
     @endif

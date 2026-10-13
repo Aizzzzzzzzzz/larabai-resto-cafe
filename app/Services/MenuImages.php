@@ -20,25 +20,25 @@ class MenuImages
     public const DIRECTORY = 'menu';
 
     /** Saves the upload and returns its path on the public disk, e.g. "menu/Qk3….webp". */
-    public function store(UploadedFile $file): string
+    public function store(UploadedFile $file, string $directory = self::DIRECTORY, int $maxSide = self::MAX_SIDE): string
     {
-        $redrawn = $this->redraw($file);
+        $redrawn = $this->redraw($file, $maxSide);
 
         if ($redrawn) {
             [$bytes, $extension] = $redrawn;
-            $path = self::DIRECTORY.'/'.Str::random(40).'.'.$extension;
+            $path = $directory.'/'.Str::random(40).'.'.$extension;
             Storage::disk('public')->put($path, $bytes);
 
             return $path;
         }
 
         // No GD: keep the file as it came, under a random name with the extension its content proves
-        return $file->storeAs(self::DIRECTORY, Str::random(40).'.'.($file->guessExtension() ?: 'jpg'), 'public');
+        return $file->storeAs($directory, Str::random(40).'.'.($file->guessExtension() ?: 'jpg'), 'public');
     }
 
     public function delete(?string $path): void
     {
-        if ($path && str_starts_with($path, self::DIRECTORY.'/')) {
+        if ($path && preg_match('#^(menu|branding)/#', $path)) {
             Storage::disk('public')->delete($path);
         }
     }
@@ -50,7 +50,7 @@ class MenuImages
     }
 
     /** @return array{0: string, 1: string}|null the picture's bytes and file extension */
-    private function redraw(UploadedFile $file): ?array
+    private function redraw(UploadedFile $file, int $maxSide): ?array
     {
         if (! function_exists('imagecreatefromstring')) {
             return null;
@@ -63,7 +63,9 @@ class MenuImages
         }
 
         [$width, $height] = [imagesx($source), imagesy($source)];
-        $scale = min(1, self::MAX_SIDE / max($width, $height));
+        imagealphablending($source, false);
+        imagesavealpha($source, true); // keep a transparent background (logos)
+        $scale = min(1, $maxSide / max($width, $height));
         $image = $scale < 1 ? imagescale($source, (int) round($width * $scale), (int) round($height * $scale)) : $source;
 
         imagesavealpha($image, true);

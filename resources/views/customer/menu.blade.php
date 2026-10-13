@@ -6,7 +6,7 @@
     <div class="app">
         <header class="c-head">
             <div class="c-head-row">
-                <span class="brand"><span class="brand-mark">LB</span><span class="brand-name">LaraBai Baristro</span></span>
+                <span class="brand"><x-brand-mark /><span class="brand-name">LaraBai Baristro</span></span>
                 <span class="head-right">
                     <span class="session-pill">{{ $sessionLabel }}</span>
                     <x-theme-toggle />

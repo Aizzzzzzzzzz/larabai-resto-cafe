@@ -4,7 +4,7 @@
 
 @section('content')
     <header class="k-head">
-        <a class="brand" href="{{ route('navigator') }}"><span class="brand-mark">LB</span></a>
+        <a class="brand" href="{{ route('navigator') }}"><x-brand-mark /></a>
         <h1>Kitchen display</h1>
         @include('kitchen.partials.stats')
         <div class="k-tools">

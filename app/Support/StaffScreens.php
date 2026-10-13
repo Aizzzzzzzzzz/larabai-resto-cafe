@@ -27,6 +27,7 @@ class StaffScreens
         'admin.menu-items.index' => 'Menu & prices',
         'admin.users.index' => 'Users & roles',
         'admin.audit-logs.index' => 'Audit logs',
+        'admin.branding.edit' => 'Logo',
         'admin.tables.qr' => 'Table QR codes',
     ];
 
