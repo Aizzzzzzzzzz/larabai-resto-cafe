@@ -83,10 +83,7 @@ export function initKitchen() {
         else if (e.target.closest('[data-drawer-close]')) drawer(false);
     });
     document.addEventListener('keydown', (e) => { if (e.key === 'Escape') drawer(false); });
-    document.addEventListener('change', (e) => {
-        const form = e.target.closest('form[data-autosubmit]');
-        if (form) form.requestSubmit();
-    });
+    // (the switches' forms submit on change through core/autosubmit.js)
 
     // Refresh the board every 5 seconds; beep when the New column grows
     let lastNew = Number(document.querySelector('[data-k-part="columns"]').dataset.newCount);

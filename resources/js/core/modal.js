@@ -9,6 +9,8 @@
      data-title   → the modal heading
      data-text    → the text of [data-modal-text] inside the modal
      data-submit  → the label of [data-modal-submit]
+     data-fill    → JSON { fieldName: value } put into the form's fields (inputs, selects, radio groups);
+                    the form then fires a bubbling "modal:filled" event for screens that preview values
    The action is also kept in a hidden _action field, so a modal re-opened after a failed
    validation still posts to the same row. */
 export function openModal(id, opener = null) {
@@ -26,6 +28,12 @@ export function openModal(id, opener = null) {
         set('h2', opener.dataset.title);
         set('[data-modal-text]', opener.dataset.text);
         set('[data-modal-submit]', opener.dataset.submit);
+        if (form && opener.dataset.fill) {
+            Object.entries(JSON.parse(opener.dataset.fill)).forEach(([name, value]) => {
+                if (form.elements[name]) form.elements[name].value = value; // RadioNodeList selects the matching radio
+            });
+            form.dispatchEvent(new CustomEvent('modal:filled', { bubbles: true }));
+        }
     }
 
     back.hidden = false;

@@ -30,6 +30,10 @@
 >
 > **2026-10-12 — Scaffold Step 4 done:** kitchen display. *(actual: `KitchenActions` rules, state-table
 > row 9b, board refreshed by swapping server-rendered partials every 5 s.)*
+>
+> **2026-10-13 — Scaffold Step 5 done:** inventory module. *(actual: `StockUsage` built now instead of
+> Phase 2; stock history is its own page; `DemoMovements` is scaffold-only sample data. Phase 6 still
+> owes: real `stock_movements`, restock/count writes, ingredient CRUD, and the audit entries.)*
 
 ---
 

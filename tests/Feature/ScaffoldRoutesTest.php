@@ -10,7 +10,7 @@ use Tests\TestCase;
 /**
  * UI scaffold check (ui-scaffold-checklist.md): every screen opens, every form route answers
  * with the "nothing is saved" toast. Replaced module by module by real feature tests
- * (tests/Feature/Customer, Cashier, Kitchen).
+ * (tests/Feature/Customer, Cashier, Kitchen, Inventory).
  */
 class ScaffoldRoutesTest extends TestCase
 {
@@ -22,8 +22,6 @@ class ScaffoldRoutesTest extends TestCase
             'components (staff)' => ['navigator.components.staff'],
             'components (customer)' => ['navigator.components.customer'],
             'login' => ['login'],
-            'inventory stock' => ['inventory.ingredients.index'],
-            'inventory history' => ['inventory.ingredients.history', ['ingredient' => 'milk']],
             'admin dashboard' => ['admin.dashboard'],
             'admin menu' => ['admin.menu-items.index'],
             'admin users' => ['admin.users.index'],
@@ -39,9 +37,6 @@ class ScaffoldRoutesTest extends TestCase
         return [
             'login' => ['post', 'login.store'],
             'logout' => ['post', 'logout'],
-            'ingredient add' => ['post', 'inventory.ingredients.store'],
-            'ingredient edit' => ['put', 'inventory.ingredients.update', ['ingredient' => 'milk']],
-            'restock' => ['post', 'inventory.ingredients.restock', ['ingredient' => 'milk']],
             'menu item add' => ['post', 'admin.menu-items.store'],
             'menu item edit' => ['put', 'admin.menu-items.update', ['menu_item' => 'latte']],
             'menu item remove' => ['delete', 'admin.menu-items.destroy', ['menu_item' => 'latte']],

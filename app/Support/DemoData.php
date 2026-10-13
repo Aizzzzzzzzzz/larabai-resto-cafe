@@ -214,6 +214,11 @@ class DemoData
         ], $rows);
     }
 
+    public static function ingredient(string $code): ?array
+    {
+        return collect(self::ingredients())->firstWhere('code', $code);
+    }
+
     /**
      * Ingredients per serving (same at every size): item code => [[ingredient code, qty], …].
      * Drinks also use one cup (12 or 16 oz by size) and one lid, added automatically.

@@ -94,9 +94,22 @@ No database, no auth. Plan and route map: `development-plan.md` §0, §4.
 > surviving the 5 s refresh, drawer switch, Start posts back with toast); screenshot matches the mockup.
 
 ## Step 5 — Inventory module (`inventory.html`)
-- [ ] Stock list: tabs (All / Low / Out), category filter, search, value, status, "can't be made" banner, summary cards
-- [ ] Restock modal (add delivery / set counted amount, before → after preview) → POST
-- [ ] Add / edit ingredient modal → POST / PUT; History page per ingredient
+- [x] Stock list: tabs (All / Low or out / In stock), category filter, search (two GET forms that keep each other's values), level bar, value,
+      status chip, out-of-stock rows first, "menu items unavailable" banner, summary cards
+- [x] One shared Restock modal: row button fills it (`data-fill` JSON in `core/modal.js`), mode switch suggests the usual quantity or the
+      books' count, live "Stock becomes …" preview; a count that matches changes nothing; validated by `RestockRequest`
+      (modal re-opens with the row's context after a failed save)
+- [x] Add ingredient (unit + opening stock) / Edit ingredient (unit and stock locked) modals → POST / PUT, validated by `IngredientRequest`
+      (duplicate names rejected, case-insensitive)
+- [x] History page per ingredient *(actual: a page, not a modal — plan §4 route `inventory.ingredients.history`)*: used-in chips,
+      last 40 movements newest first, change / balance / staff
+- [x] `App\Services\StockUsage` *(actual: built now, Phase 2 item)* — recipe + cup/lid + add/replace options; `App\Support\DemoMovements`
+      builds a sample history from the sample orders whose balances end at today's stock; enums `MovementType`, `Unit`
+- [x] `core/autosubmit.js` shared (moved out of kitchen.js)
+
+> Verified 2026-10-13: 123 tests pass (`tests/Feature/Inventory/InventoryTest.php`, `tests/Unit/StockTest.php`); 23 headless-Edge
+> checks (modal fill, previews in delivery and count modes, switching rows, failed save re-open, edit prefill, filter keeps tab).
+> Note: MySQL was not running on the test day, so the browser run used `SESSION_DRIVER=file` for the throwaway server only.
 
 ## Step 6 — Admin module (`admin.html`)
 - [ ] Dashboard: KPI cards vs last week, 14-day sales chart, payment mix, orders by hour, best sellers, recent activity, needs attention
