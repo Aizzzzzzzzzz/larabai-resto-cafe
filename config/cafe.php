@@ -24,4 +24,8 @@ return [
     // Demo-only features: system navigator, demo login accounts, "Reset demo data".
     'demo_mode' => (bool) env('CAFE_DEMO_MODE', true),
 
+    // Seed today's 13 sample orders and 30 days of sales history. Turn off for a fresh start: the demo
+    // accounts, menu, stock and tables are still seeded, but there are no orders and the stock starts from a count.
+    'sample_orders' => (bool) env('CAFE_SAMPLE_ORDERS', true),
+
 ];

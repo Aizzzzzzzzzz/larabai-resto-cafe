@@ -15,10 +15,10 @@ class IngredientSeeder extends Seeder
             Ingredient::create($i);
         }
 
-        // A real café's stock history starts with a count. In demo mode SampleOrdersSeeder writes a fuller history
-        // that ends at the same amounts.
-        if (! config('cafe.demo_mode')) {
-            foreach (Ingredient::all() as $ingredient) {
+        // Without the sample orders, each ingredient's history starts with a count. With them, SampleOrdersSeeder
+        // writes a fuller history that ends at the same amounts.
+        if (! config('cafe.sample_orders')) {
+            foreach (Ingredient::where('stock_qty', '>', 0)->get() as $ingredient) {
                 StockMovement::create([
                     'ingredient_id' => $ingredient->id,
                     'type' => 'ADJUST',

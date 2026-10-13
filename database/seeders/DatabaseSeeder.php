@@ -5,9 +5,9 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 
 /**
- * `php artisan db:seed` — the café's starting data. The menu, stock and tables are always seeded; in demo mode
- * (CAFE_DEMO_MODE) today's sample orders and 30 days of sales history come with them, so every screen has
- * something to show. A real café turns demo mode off and gets only one admin account.
+ * `php artisan db:seed` — the café's starting data. The menu, stock and tables are always seeded. The five demo
+ * accounts come with demo mode (CAFE_DEMO_MODE; a real café gets one admin instead). Today's sample orders and
+ * 30 days of sales come with CAFE_SAMPLE_ORDERS; turn that off for a fresh start with no orders.
  */
 class DatabaseSeeder extends Seeder
 {
@@ -20,7 +20,7 @@ class DatabaseSeeder extends Seeder
             MenuSeeder::class,
         ]);
 
-        if (config('cafe.demo_mode')) {
+        if (config('cafe.sample_orders')) {
             $this->call([
                 SampleOrdersSeeder::class,
                 SampleHistorySeeder::class,

@@ -2,6 +2,7 @@
 
 namespace Database\Seeders\Data;
 
+use App\Support\Format;
 use Illuminate\Support\Carbon;
 
 /**
@@ -35,16 +36,16 @@ class SampleAudit
         foreach (SampleData::orders() as $o) {
             $no = $o['order_no'];
             if ($o['source'] === 'pos') {
-                $add($o['created_at'], 'Jessa Manalo', 'cashier', 'Created counter order', "{$no} · ".peso($o['total']));
+                $add($o['created_at'], 'Jessa Manalo', 'cashier', 'Created counter order', "{$no} · ".Format::peso($o['total']));
             }
             if ($d = $o['discount']) {
-                $add($o['paid_at'], 'Jessa Manalo', 'cashier', 'Applied discount', "{$no} · {$d['discount_type']} {$d['id_no']} · −".peso($d['amount']));
+                $add($o['paid_at'], 'Jessa Manalo', 'cashier', 'Applied discount', "{$no} · {$d['discount_type']} {$d['id_no']} · −".Format::peso($d['amount']));
             }
             if ($p = $o['payment']) {
                 $who = $p['received_by'] ?? 'Customer (QR)';
-                $add($p['paid_at'], $who, $p['received_by'] ? 'cashier' : 'customer', 'Payment recorded', "{$no} · {$p['method']} · ".peso($p['amount'])." · {$p['reference_no']}");
+                $add($p['paid_at'], $who, $p['received_by'] ? 'cashier' : 'customer', 'Payment recorded', "{$no} · {$p['method']} · ".Format::peso($p['amount'])." · {$p['reference_no']}");
                 if ($p['status'] === 'VOIDED') {
-                    $add($p['voided_at'], 'Jessa Manalo', 'cashier', 'Voided order', "{$no} · ".peso($o['total'])." · {$o['cancel_reason']}");
+                    $add($p['voided_at'], 'Jessa Manalo', 'cashier', 'Voided order', "{$no} · ".Format::peso($o['total'])." · {$o['cancel_reason']}");
                 }
             }
             if ($o['status'] === 'cancelled') {
