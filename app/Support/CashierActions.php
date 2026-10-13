@@ -5,7 +5,7 @@ namespace App\Support;
 /**
  * What the cashier can do with an order at its current stage — the row buttons on the Orders
  * screen and the guard in each controller come from here, so they can't disagree.
- * Phase 2 moves the transition rules into OrderWorkflow (development-plan.md §3 state table).
+ * OrderWorkflow checks the same rules before it moves an order (development-plan.md §3 state table).
  */
 class CashierActions
 {

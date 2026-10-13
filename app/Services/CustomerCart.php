@@ -2,7 +2,6 @@
 
 namespace App\Services;
 
-use App\Support\DemoData;
 use App\Support\Format;
 use Illuminate\Contracts\Session\Session;
 
@@ -13,7 +12,6 @@ use Illuminate\Contracts\Session\Session;
  * plus the unit price they last saw. Names and prices are always re-read from the current menu,
  * so a price change or a removed item is noticed (document.md §6 #9).
  *
- * UI scaffold: the menu comes from DemoData. Phase 3 reads the menu_items table instead.
  */
 class CustomerCart
 {
@@ -151,7 +149,7 @@ class CustomerCart
     /** Stored line + current menu → priced line, or null if the item left the menu. Unknown options are dropped. */
     private function resolve(array $line): ?array
     {
-        $item = DemoData::item($line['menu_item']);
+        $item = Catalog::item($line['menu_item']);
 
         if (! $item || ! $item['is_active']) {
             return null;
@@ -175,7 +173,7 @@ class CustomerCart
             'unit_price' => $item['price'] + array_sum(array_column($options, 'price')),
             'notes' => $line['notes'],
             'options' => $options,
-            'sold_out' => DemoData::isSoldOut($item),
+            'sold_out' => Catalog::isSoldOut($item),
         ];
     }
 

@@ -3,20 +3,19 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\AuditLog;
+use App\Services\Catalog;
+use App\Services\Orders;
+use App\Services\Reports;
 use App\Support\CashierActions;
 use App\Support\CurrentStaff;
-use App\Support\DemoAudit;
-use App\Support\DemoData;
-use App\Support\DemoSales;
 use App\Support\Format;
 use App\Support\StockLevel;
-use Illuminate\Support\Carbon;
 use Illuminate\View\View;
 
 /**
- * Sales dashboard (document.md §3.7). Everything is computed from "paid, not voided" orders;
- * UI scaffold: generated history for the 30 days before today plus today's sample orders.
- * Phase 7 runs the same figures as queries.
+ * Sales dashboard (document.md §3.7). Every figure counts paid orders that weren't voided,
+ * by the time they were paid; see App\Services\Reports.
  */
 class DashboardController extends Controller
 {
@@ -27,31 +26,33 @@ class DashboardController extends Controller
     public function index(): View
     {
         $day = fn (int $ago) => now()->startOfDay()->subDays($ago);
-        $sum = fn (array $orders, string $key) => array_sum(array_column($orders, $key));
 
-        $today = DemoSales::between($day(0), $day(-1));
+        $today = Reports::sales($day(0), $day(-1));
         // The same weekday last week, up to the same time of day, so the comparison is fair mid-shift
-        $lastWeek = DemoSales::between($day(7), now()->subDays(7));
-        $week = DemoSales::between($day(7), $day(0));
-
-        $salesToday = $sum($today, 'total');
-        $salesLastWeek = $sum($lastWeek, 'total');
+        $lastWeek = Reports::sales($day(7), now()->subDays(7));
 
         return view('admin.dashboard', [
             'greeting' => $this->greeting(),
             'kpis' => [
-                'sales' => $salesToday, 'salesBefore' => $salesLastWeek,
-                'orders' => count($today), 'ordersBefore' => count($lastWeek),
-                'average' => $today ? $salesToday / count($today) : 0,
-                'averageBefore' => $lastWeek ? $salesLastWeek / count($lastWeek) : 0,
-                'discounts' => $sum($today, 'discount'),
+                'sales' => $today['total'], 'salesBefore' => $lastWeek['total'],
+                'orders' => $today['count'], 'ordersBefore' => $lastWeek['count'],
+                'average' => $today['count'] ? $today['total'] / $today['count'] : 0,
+                'averageBefore' => $lastWeek['count'] ? $lastWeek['total'] / $lastWeek['count'] : 0,
+                'discounts' => $today['discount'],
             ],
-            'salesChart' => $this->salesByDay($day, $sum),
-            'mixLast30' => $this->paymentMix(DemoSales::between($day(30), $day(-1))),
-            'mixToday' => $today ? $this->paymentMix($today) : null,
-            'hoursChart' => $this->ordersByHour($week),
-            'best' => $this->bestSellers([...$week, ...$today]),
-            'activity' => collect(DemoAudit::all())->reverse()->take(8)->map(fn ($a) => $a + ['ago' => Format::ago($a['logged_at'])])->values(),
+            'salesChart' => $this->salesByDay($day),
+            'mixLast30' => $this->paymentMix(Reports::paymentMix($day(30), $day(-1))),
+            'mixToday' => $today['count'] ? $this->paymentMix(Reports::paymentMix($day(0), $day(-1))) : null,
+            'hoursChart' => $this->ordersByHour(Reports::ordersByHour($day(7), $day(0))),
+            'best' => Reports::bestSellers($day(7), $day(-1)),
+            'activity' => AuditLog::orderByDesc('logged_at')->orderByDesc('id')->limit(8)->get()->map(fn ($a) => [
+                'logged_at' => $a->logged_at->toDateTimeString(),
+                'user' => $a->user_name,
+                'role' => $a->role,
+                'action' => $a->action,
+                'detail' => (string) $a->detail,
+                'ago' => Format::ago($a->logged_at),
+            ]),
             'attention' => $this->attention(),
         ]);
     }
@@ -65,16 +66,18 @@ class DashboardController extends Controller
     }
 
     /** Sales for each of the last 14 days, today last (highlighted). */
-    private function salesByDay(callable $day, callable $sum): array
+    private function salesByDay(callable $day): array
     {
+        $byDay = Reports::salesByDay($day(13), $day(-1));
+
         $data = [];
         for ($i = 13; $i >= 0; $i--) {
-            $orders = DemoSales::between($day($i), $day($i - 1));
             $date = $day($i);
+            $sales = $byDay[$date->toDateString()] ?? ['count' => 0, 'total' => 0.0];
             $data[] = [
                 'label' => $date->format('M j'),
-                'value' => $sum($orders, 'total'),
-                'tip' => '<b>'.$date->format('D, M j').'</b><span>'.peso($sum($orders, 'total')).' · '.count($orders).' orders</span>',
+                'value' => $sales['total'],
+                'tip' => '<b>'.$date->format('D, M j').'</b><span>'.peso($sales['total']).' · '.$sales['count'].' orders</span>',
             ];
         }
 
@@ -82,21 +85,21 @@ class DashboardController extends Controller
     }
 
     /** Share of sales by payment method, in the order GCash, Cash, Maya. */
-    private function paymentMix(array $orders): array
+    private function paymentMix(array $totals): array
     {
         return array_map(fn ($method) => [
             'label' => self::PAYMENT_NAMES[$method],
             'color' => self::PAYMENT_COLORS[$method],
-            'value' => array_sum(array_column(array_filter($orders, fn ($o) => $o['method'] === $method), 'total')),
+            'value' => $totals[$method] ?? 0,
         ], ['GCASH', 'CASH', 'MAYA']);
     }
 
     /** Average orders per day for each opening hour (7 AM – 9 PM), over the last 7 days. */
-    private function ordersByHour(array $week): array
+    private function ordersByHour(array $counts): array
     {
         $hours = [];
         foreach (range(7, 21) as $hour) {
-            $n = count(array_filter($week, fn ($o) => (int) Carbon::parse($o['paid_at'])->format('G') === $hour)) / 7;
+            $n = ($counts[$hour] ?? 0) / 7;
             $label = ($hour % 12 ?: 12);
             $hours[] = [
                 'label' => $label.($hour < 12 ? 'a' : 'p'),
@@ -108,30 +111,12 @@ class DashboardController extends Controller
         return $hours;
     }
 
-    /** @return array<int, array{name: string, qty: int, revenue: float}> top six by quantity */
-    private function bestSellers(array $orders): array
-    {
-        $counts = [];
-        foreach ($orders as $order) {
-            foreach ($order['items'] as $line) {
-                $c = &$counts[$line['menu_item']];
-                $c ??= ['name' => $line['name'], 'qty' => 0, 'revenue' => 0];
-                $c['qty'] += $line['qty'];
-                $c['revenue'] += $line['unit_price'] * $line['qty'];
-                unset($c);
-            }
-        }
-        usort($counts, fn ($a, $b) => $b['qty'] <=> $a['qty']);
-
-        return array_slice($counts, 0, 6);
-    }
-
     /** The "Needs attention" list: each row links to where it's handled. */
     private function attention(): array
     {
-        $orders = collect(DemoData::orders());
-        $low = collect(DemoData::ingredients())->filter(fn ($i) => StockLevel::of($i) !== StockLevel::OK)->pluck('name');
-        $soldOut = collect(DemoData::items())->filter(fn ($i) => DemoData::isSoldOut($i))->pluck('name');
+        $orders = collect(Orders::today());
+        $low = collect(Catalog::ingredients())->filter(fn ($i) => StockLevel::of($i) !== StockLevel::OK)->pluck('name');
+        $soldOut = collect(Catalog::menu())->filter(fn ($i) => Catalog::isSoldOut($i))->pluck('name');
 
         return [
             ['label' => 'Orders waiting for payment', 'count' => $orders->filter(fn ($o) => CashierActions::unpaid($o))->count(), 'bad' => 'chip-red', 'ok' => 'chip-green', 'url' => route('cashier.orders.index'), 'note' => null],

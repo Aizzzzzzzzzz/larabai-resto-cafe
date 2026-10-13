@@ -4,36 +4,49 @@ namespace App\Http\Controllers\Cashier;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Cashier\ChargeRequest;
-use App\Support\DemoData;
+use App\Services\Catalog;
+use App\Services\OrderService;
+use App\Support\Format;
+use App\Support\MenuOptions;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 
 class PosController extends Controller
 {
-    /**
-     * UI scaffold: charging saves nothing — the cashier is taken to the sample order that matches
-     * the order type. Phase 4 creates the order (source pos, created_by = cashier) instead.
-     */
-    private const DEMO_ORDER = ['dine-in' => 12, 'take-out' => 13];
-
     public function index(): View
     {
-        $items = array_map(fn ($i) => $i + ['sold_out' => DemoData::isSoldOut($i)], DemoData::items());
-
         return view('cashier.pos', [
-            'categories' => DemoData::categories(),
-            'items' => $items,
-            'tables' => DemoData::tables(),
+            'categories' => Catalog::categories(),
+            'items' => Catalog::menu(),
+            'tables' => array_values(array_filter(Catalog::tables(), fn ($t) => $t['is_active'])),
             // After a successful charge, the browser-kept ticket is emptied on the next visit
             'resetTicket' => (bool) session()->pull('pos_reset'),
         ]);
     }
 
-    /** Charge the ticket: one form holding every line (built by JS as array inputs). */
-    public function store(ChargeRequest $request): RedirectResponse
+    /**
+     * Charge the ticket: one form holding every line (built by JS as array inputs). The order is created
+     * unpaid; the cashier lands on its payment screen to take the money.
+     */
+    public function store(ChargeRequest $request, OrderService $orders): RedirectResponse
     {
+        $lines = array_map(fn ($line) => [
+            'menu_item' => $line['menu_item'],
+            'qty' => (int) $line['qty'],
+            'notes' => $line['notes'] ?? null,
+            'options' => MenuOptions::flatten($line['options'] ?? []),
+        ], $request->input('items'));
+
+        $order = $orders->place($lines, [
+            'source' => 'pos',
+            'order_type' => $request->input('order_type'),
+            'table_no' => $request->input('table_no') ? (int) $request->input('table_no') : null,
+            'payment_method' => 'CASH', // the cashier picks the real method on the payment screen
+        ], $request->user());
+
         $request->session()->put('pos_reset', true);
 
-        return $this->demoSaved('cashier.payments.create', ['order' => self::DEMO_ORDER[$request->input('order_type')]]);
+        return redirect()->route('cashier.payments.create', $order->id)
+            ->with('status', "Order {$order->order_no} created · ".Format::peso($order->total));
     }
 }

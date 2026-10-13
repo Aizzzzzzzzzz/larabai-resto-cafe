@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Support;
+namespace Database\Seeders\Data;
 
 use App\Enums\MovementType;
 use App\Services\StockUsage;
@@ -12,9 +12,9 @@ use Illuminate\Support\Carbon;
  * orders, deducted when placed) use stock; the voided order gives it back. Each ingredient starts
  * from an opening count worked out so its running balance ends at its current stock.
  *
- * UI scaffold only — Phase 2's StockService writes these rows for real.
+ * Seed data only — the running app writes these rows through StockService.
  */
-class DemoMovements
+class SampleMovements
 {
     /** Newest first, at most $limit rows. */
     public static function for(string $ingredientCode, int $limit = 40): array
@@ -30,7 +30,7 @@ class DemoMovements
             $raw[$code][] = ['type' => $type, 'qty' => round($qty, 2), 'moved_at' => $at, 'reference' => $ref, 'note' => $note, 'user' => $user];
         };
 
-        foreach (DemoData::orders() as $order) {
+        foreach (SampleData::orders() as $order) {
             $usage = StockUsage::forOrder($order['items']);
             $user = $order['created_by'] ?? 'System (auto)';
             $deducted = $order['payment'] !== null || $order['is_cod'];
@@ -55,8 +55,8 @@ class DemoMovements
         $push('milk', MovementType::Purchase, 10000, $morning->copy()->addMinutes(20)->toDateTimeString(), '', 'Delivered by Central Luzon Dairy', 'Liza Garcia');
         $push('egg', MovementType::Adjust, -3, $morning->copy()->addMinutes(35)->toDateTimeString(), '', 'Physical count', 'Liza Garcia');
 
-        $unitCost = array_column(DemoData::ingredients(), 'unit_cost', 'code');
-        $stock = array_column(DemoData::ingredients(), 'stock_qty', 'code');
+        $unitCost = array_column(SampleData::ingredients(), 'unit_cost', 'code');
+        $stock = array_column(SampleData::ingredients(), 'stock_qty', 'code');
         $out = [];
 
         foreach ($raw as $code => $moves) {

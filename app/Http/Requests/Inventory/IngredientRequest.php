@@ -3,7 +3,7 @@
 namespace App\Http\Requests\Inventory;
 
 use App\Enums\Unit;
-use App\Support\DemoData;
+use App\Services\Catalog;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -15,7 +15,7 @@ class IngredientRequest extends FormRequest
 {
     protected function prepareForValidation(): void
     {
-        abort_if($this->route('ingredient') && ! DemoData::ingredient($this->route('ingredient')), 404);
+        abort_if($this->route('ingredient') && ! Catalog::ingredient($this->route('ingredient')), 404);
     }
 
     public function rules(): array
@@ -24,7 +24,7 @@ class IngredientRequest extends FormRequest
 
         return [
             'name' => ['required', 'string', 'max:100', function ($attribute, $value, $fail) use ($editing) {
-                $taken = collect(DemoData::ingredients())
+                $taken = collect(Catalog::ingredients())
                     ->contains(fn ($i) => mb_strtolower($i['name']) === mb_strtolower(trim($value)) && $i['code'] !== $editing);
                 if ($taken) {
                     $fail("{$value} already exists.");

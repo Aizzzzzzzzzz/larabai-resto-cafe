@@ -9,53 +9,62 @@ use Symfony\Component\HttpKernel\Exception\HttpException;
 use Tests\TestCase;
 
 /**
- * Scaffold Step 8: the whole site, crawled like a visitor. Starting from the public pages (with a scanned
- * table QR and a cart, so the customer screens open), every link on every page is followed and every form
- * is checked against the routes. Nothing may lead to an error, and every page must meet basic
- * accessibility rules. Phase 0 reuses this per role once the screens are protected.
+ * The whole site, crawled like a visitor. Starting from the public pages (with a scanned table QR and a cart,
+ * so the customer screens open), every link on every page is followed and every form is checked against the
+ * routes. Nothing may lead to an error, and every page must meet basic accessibility rules. The owner's crawl
+ * reaches every module; each other role is crawled from its own home screen and must find no link that
+ * leads somewhere it may not go.
  */
 class SiteIntegrityTest extends TestCase
 {
     private const MAX_PAGES = 400;
 
-    /** @var array<string, array{status: int, html: ?string, from: string}> */
-    private static array $pages = [];
+    /** @var array<string, array<string, array{status: int, html: ?string, from: string}>> the crawl of each account, kept for the whole run */
+    private static array $crawls = [];
 
-    private function crawl(): array
+    /**
+     * Follows every link from the starting pages, signed in as the given demo account.
+     *
+     * @param  string[]|null  $start  where to begin; the owner starts from the public pages
+     * @return array<string, array{status: int, html: ?string, from: string}>
+     */
+    private function crawl(string $as = 'admin', ?array $start = null): array
     {
-        if (self::$pages) {
-            return self::$pages;
+        if (isset(self::$crawls[$as])) {
+            return self::$crawls[$as];
         }
 
-        $this->withSession([
+        $this->signIn($as)->withSession([
             'qr' => ['type' => 'dine-in', 'table' => 3],
             'cart' => [['id' => 1, 'menu_item' => 'latte', 'choices' => ['temp' => ['iced'], 'size' => ['l']], 'notes' => null, 'qty' => 1, 'name' => 'Café Latte', 'unit_price' => 165]],
             'my_orders' => ['demo-0012', 'demo-0008'],
         ]);
 
-        $queue = [['/', '(start)'], ['/navigator', '(start)'], ['/login', '(start)']];
-        while ($queue && count(self::$pages) < self::MAX_PAGES) {
+        $pages = [];
+        $queue = array_map(fn ($path) => [$path, '(start)'], $start ?? ['/', '/navigator', '/login']);
+        while ($queue && count($pages) < self::MAX_PAGES) {
             [$path, $from] = array_shift($queue);
-            if (isset(self::$pages[$path])) {
+            if (isset($pages[$path])) {
                 continue;
             }
 
             $response = $this->get($path);
             $status = $response->getStatusCode();
             $html = str_contains((string) $response->headers->get('content-type'), 'text/html') && $status === 200 ? $response->getContent() : null;
-            self::$pages[$path] = ['status' => $status, 'html' => $html, 'from' => $from];
+            $pages[$path] = ['status' => $status, 'html' => $html, 'from' => $from];
 
             if ($status >= 300 && $status < 400) {
                 $queue[] = [$this->internalPath($response->headers->get('location')) ?? '/', $path];
             }
             foreach ($html ? $this->links($html) : [] as $link) {
-                if (($target = $this->internalPath($link)) !== null && ! isset(self::$pages[$target])) {
+                // The demo navigator lists every screen of every role, so it is left out of a single role's crawl
+                if (($target = $this->internalPath($link)) !== null && ! isset($pages[$target]) && ! ($as !== 'admin' && str_starts_with($target, '/navigator'))) {
                     $queue[] = [$target, $path];
                 }
             }
         }
 
-        return self::$pages;
+        return self::$crawls[$as] = $pages;
     }
 
     public function test_the_crawl_reaches_every_screen(): void
@@ -84,6 +93,23 @@ class SiteIntegrityTest extends TestCase
         }
 
         $this->assertSame([], $broken, "Broken links:\n".implode("\n", $broken));
+    }
+
+    public function test_each_role_finds_only_links_it_may_follow(): void
+    {
+        foreach (['cashier' => '/cashier/pos', 'kitchen' => '/kitchen', 'stock' => '/inventory/ingredients'] as $username => $home) {
+            $pages = $this->crawl($username, [$home]);
+            $broken = [];
+            foreach ($pages as $path => $page) {
+                if ($page['status'] >= 400) {
+                    $broken[] = "{$path} → {$page['status']} (linked from {$page['from']})";
+                }
+            }
+
+            $this->assertSame([], $broken, "{$username} was offered links it can't open:\n".implode("\n", $broken));
+            $this->assertGreaterThanOrEqual(1, count($pages), "{$username} crawl found pages");
+            $this->assertNotContains('/admin', array_keys($pages), "{$username} is not offered the dashboard");
+        }
     }
 
     public function test_every_form_posts_to_a_real_route(): void

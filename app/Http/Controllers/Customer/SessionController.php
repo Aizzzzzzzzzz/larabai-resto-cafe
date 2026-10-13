@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Customer;
 
 use App\Http\Controllers\Controller;
+use App\Services\Catalog;
 use App\Services\CustomerCart;
-use App\Support\DemoData;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 
@@ -17,8 +17,7 @@ class SessionController extends Controller
 {
     public function table(Request $request, CustomerCart $cart, int $table): RedirectResponse
     {
-        // UI scaffold: tables from DemoData. Phase 3 checks dining_tables.is_active.
-        abort_unless(in_array($table, array_column(DemoData::tables(), 'table_no'), true), 404);
+        abort_unless(collect(Catalog::tables())->contains(fn ($t) => $t['table_no'] === $table && $t['is_active']), 404);
 
         return $this->start($request, $cart, ['type' => 'dine-in', 'table' => $table]);
     }

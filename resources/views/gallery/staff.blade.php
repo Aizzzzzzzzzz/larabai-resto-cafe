@@ -2,7 +2,7 @@
 
 @section('title', 'Components · Brew & Bite Café')
 @section('heading', 'Shared components')
-@section('sub', 'Staff side · sample data from App\Support\DemoData · demo mode only')
+@section('sub', 'Staff side · sample data · demo mode only')
 @section('actions')
     <a class="btn btn-ghost btn-sm" href="{{ route('navigator.components.customer') }}">Customer side →</a>
 @endsection

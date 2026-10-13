@@ -2,8 +2,8 @@
 
 namespace App\Http\Requests\Customer;
 
+use App\Services\Catalog;
 use App\Services\CustomerCart;
-use App\Support\DemoData;
 use App\Support\MenuOptions;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Validator;
@@ -28,13 +28,13 @@ class AddToCartRequest extends FormRequest
                 return;
             }
 
-            $item = DemoData::item($this->input('menu_item'));
+            $item = Catalog::item($this->input('menu_item'));
             if (! $item || ! $item['is_active']) {
                 $validator->errors()->add('menu_item', 'That item is no longer on the menu.');
 
                 return;
             }
-            if (DemoData::isSoldOut($item)) {
+            if (Catalog::isSoldOut($item)) {
                 $validator->errors()->add('menu_item', "Sorry, {$item['name']} just sold out.");
 
                 return;

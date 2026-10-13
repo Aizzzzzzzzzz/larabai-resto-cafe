@@ -4,7 +4,7 @@ namespace App\Support;
 
 /**
  * Kitchen display rules: which orders are on the board, which column, and which ticket buttons
- * apply. The same rules guard the controller. Phase 2 moves the transitions into OrderWorkflow.
+ * apply. The same rules guard the controller and OrderWorkflow.
  */
 class KitchenActions
 {

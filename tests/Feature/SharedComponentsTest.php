@@ -2,10 +2,11 @@
 
 namespace Tests\Feature;
 
-use App\Support\DemoData;
+use App\Services\Catalog;
+use App\Services\Orders;
 use Tests\TestCase;
 
-/** UI scaffold Step 1: each shared component renders the mockup's markup. */
+/** Each shared component renders the mockup's markup. */
 class SharedComponentsTest extends TestCase
 {
     public function test_status_pill_uses_the_mockup_label_and_chip(): void
@@ -26,7 +27,7 @@ class SharedComponentsTest extends TestCase
 
     public function test_order_lines_show_options_note_and_line_amount(): void
     {
-        $lines = DemoData::order(8)['items']; // 2× iced large latte with oat milk, note "Less ice"
+        $lines = Orders::find(8)['items']; // 2× iced large latte with oat milk, note "Less ice"
 
         $this->blade('<x-order-lines :lines="$lines" />', ['lines' => $lines])
             ->assertSeeInOrder(['2×', 'Café Latte', 'Iced · Large (16 oz) · Oat milk', 'Note: Less ice', '₱410.00']);
@@ -70,23 +71,23 @@ class SharedComponentsTest extends TestCase
     public function test_tracker_follows_the_order_stage(): void
     {
         // Dine-in, paid by GCash, now preparing
-        $this->blade('<x-tracker :order="$o" />', ['o' => DemoData::order(8)])
+        $this->blade('<x-tracker :order="$o" />', ['o' => Orders::find(8)])
             ->assertSeeInOrder(['class="done"', 'Order placed', 'class="done"', 'Payment confirmed', 'GCash · GC-', 'class="now"', 'Preparing', 'class="todo"', 'Ready', 'class="todo"', 'Served to your table'], false);
 
         // Cash on delivery in the kitchen: the payment step waits for the rider
-        $this->blade('<x-tracker :order="$o" />', ['o' => DemoData::order(9)])
+        $this->blade('<x-tracker :order="$o" />', ['o' => Orders::find(9)])
             ->assertSeeInOrder(['class="todo"', 'Pay the rider', 'class="now"', 'Preparing', 'Out for delivery', 'Delivered'], false);
 
         // Cancelled: two steps with the reason
-        $this->blade('<x-tracker :order="$o" />', ['o' => DemoData::order(5)])
+        $this->blade('<x-tracker :order="$o" />', ['o' => Orders::find(5)])
             ->assertSeeInOrder(['Order placed', 'class="now"', 'Cancelled', 'Cancelled by customer'], false)
             ->assertDontSee('Preparing');
     }
 
     public function test_art_draws_a_glass_for_drinks_and_a_plate_for_food(): void
     {
-        $this->blade('<x-art :item="$i" />', ['i' => DemoData::item('latte')])->assertSee('art-glass', false);
-        $this->blade('<x-art :item="$i" />', ['i' => DemoData::item('tapa')])->assertSee('art-plate', false);
+        $this->blade('<x-art :item="$i" />', ['i' => Catalog::item('latte')])->assertSee('art-glass', false);
+        $this->blade('<x-art :item="$i" />', ['i' => Catalog::item('tapa')])->assertSee('art-plate', false);
     }
 
     public function test_confirm_form_asks_for_the_word(): void

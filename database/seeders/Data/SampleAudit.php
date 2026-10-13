@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Support;
+namespace Database\Seeders\Data;
 
 use Illuminate\Support\Carbon;
 
@@ -9,9 +9,9 @@ use Illuminate\Support\Carbon;
  * payments, discounts, voids, kitchen moves), plus logins, a restock and a few settings changes
  * from earlier in the week.
  *
- * UI scaffold only — Phase 0 / 2 write real rows through AuditLogger.
+ * Seed data only — the running app writes real rows through AuditLogger.
  */
-class DemoAudit
+class SampleAudit
 {
     private const ROLES = ['admin' => 'admin', 'cashier' => 'cashier', 'kitchen' => 'kitchen', 'inventory' => 'inventory'];
 
@@ -23,16 +23,16 @@ class DemoAudit
             $rows[] = ['logged_at' => Carbon::parse($at)->toDateTimeString(), 'user' => $user, 'role' => $role, 'action' => $action, 'detail' => $detail];
         };
 
-        $first = collect(DemoData::orders())->min('created_at');
+        $first = collect(SampleData::orders())->min('created_at');
         $open = Carbon::parse($first)->subHours(2);
-        $users = collect(DemoData::users())->keyBy('username');
+        $users = collect(SampleData::users())->keyBy('username');
         foreach (['cashier' => 12, 'kitchen' => 8, 'stock' => 5] as $username => $minutes) {
             $u = $users[$username];
             $add($open->copy()->addMinutes($minutes), $u['full_name'], $u['role'], 'Logged in', "{$u['full_name']} ({$u['role']})");
         }
         $add($open->copy()->addMinutes(20), 'Liza Garcia', 'inventory', 'Restocked', 'Fresh milk · +10 L · Delivered by Central Luzon Dairy');
 
-        foreach (DemoData::orders() as $o) {
+        foreach (SampleData::orders() as $o) {
             $no = $o['order_no'];
             if ($o['source'] === 'pos') {
                 $add($o['created_at'], 'Jessa Manalo', 'cashier', 'Created counter order', "{$no} · ".peso($o['total']));

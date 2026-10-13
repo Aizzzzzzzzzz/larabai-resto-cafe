@@ -3,6 +3,9 @@
 /* Flash toast on screens the mockup never toasted on (public pages, login, kitchen) */
 body:not(.m-staff):not(.m-customer) .toast-pop { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); z-index: 60; background: var(--ink); color: var(--bg); padding: 10px 16px; border-radius: 999px; font-size: .88rem; box-shadow: var(--shadow); }
 
+/* A refused action (not enough stock, order already moved on) reads as an error */
+.toast-pop.toast-error { background: var(--danger); color: #fff; }
+
 /* "Tap again to confirm" state (mockup styled it on the navigator only) */
 .btn.armed { color: var(--danger); border-color: var(--danger); }
 

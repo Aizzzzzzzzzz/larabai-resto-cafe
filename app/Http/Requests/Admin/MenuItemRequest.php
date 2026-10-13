@@ -2,7 +2,8 @@
 
 namespace App\Http\Requests\Admin;
 
-use App\Support\DemoData;
+use App\Services\Catalog;
+use App\Support\OptionTemplates;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Validator;
@@ -16,7 +17,7 @@ class MenuItemRequest extends FormRequest
 {
     protected function prepareForValidation(): void
     {
-        abort_if($this->route('menuItem') && ! DemoData::item($this->route('menuItem')), 404); // a missing item is a 404, not a validation error
+        abort_if($this->route('menuItem') && ! (Catalog::item($this->route('menuItem'))['is_active'] ?? false), 404); // a missing item is a 404, not a validation error
     }
 
     public function rules(): array
@@ -25,21 +26,21 @@ class MenuItemRequest extends FormRequest
 
         return [
             'name' => ['required', 'string', 'max:100', function ($attribute, $value, $fail) use ($editing) {
-                $taken = collect(DemoData::items())
+                $taken = collect(Catalog::items())
                     ->contains(fn ($i) => mb_strtolower($i['name']) === mb_strtolower(trim($value)) && $i['code'] !== $editing);
                 if ($taken) {
                     $fail("{$value} is already on the menu.");
                 }
             }],
-            'category' => ['required', Rule::in(array_column(DemoData::categories(), 'code'))],
+            'category' => ['required', Rule::in(array_column(Catalog::categories(), 'code'))],
             'price' => ['required', 'numeric', 'gt:0'],
             'description' => ['nullable', 'string', 'max:255'],
             'large' => ['nullable', 'numeric', 'min:0'],
-            'template' => $editing ? ['prohibited'] : ['required', Rule::in(array_keys(DemoData::optionTemplates()))],
+            'template' => $editing ? ['prohibited'] : ['required', Rule::in(array_keys(OptionTemplates::all()))],
             'is_best_seller' => ['boolean'],
             'is_new' => ['boolean'],
             'ingredients' => ['required', 'array', 'min:1'],
-            'ingredients.*.code' => ['required', Rule::in(array_column(DemoData::ingredients(), 'code'))],
+            'ingredients.*.code' => ['required', Rule::in(array_column(Catalog::ingredients(), 'code'))],
             'ingredients.*.qty' => ['required', 'numeric', 'gt:0'],
         ];
     }
@@ -80,12 +81,18 @@ class MenuItemRequest extends FormRequest
         }];
     }
 
+    /** The ingredients per serving as [[code, qty], …]. */
+    public function recipe(): array
+    {
+        return array_map(fn ($row) => [$row['code'], (float) $row['qty']], array_values($this->input('ingredients', [])));
+    }
+
     /** Whether the item has a Medium / Large choice, so "Large adds" applies. */
     private function hasSize(): bool
     {
         $groups = $this->route('menuItem')
-            ? (DemoData::item($this->route('menuItem'))['options'] ?? [])
-            : (DemoData::optionTemplates()[$this->input('template')]['groups'] ?? []);
+            ? (Catalog::item($this->route('menuItem'))['options'] ?? [])
+            : (OptionTemplates::all()[$this->input('template')]['groups'] ?? []);
 
         return collect($groups)->contains(fn ($g) => $g['code'] === 'size');
     }

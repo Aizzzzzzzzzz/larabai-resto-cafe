@@ -2,12 +2,26 @@
 
 namespace Tests\Feature\Inventory;
 
-use App\Http\Controllers\Controller;
+use App\Models\AuditLog;
+use App\Models\Ingredient;
+use App\Models\StockMovement;
 use Tests\TestCase;
 
-/** UI scaffold Step 5 — stock screen: list, alerts, filters, restock, add/edit, history. */
+/** Stock screen: list, alerts, filters, restock and counts that really change stock, add/edit, history. */
 class InventoryTest extends TestCase
 {
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->asStockClerk();
+    }
+
+    private function stock(string $code): float
+    {
+        return Ingredient::where('code', $code)->value('stock_qty');
+    }
+
     public function test_summary_cards_and_blocked_menu_banner(): void
     {
         $this->get(route('inventory.ingredients.index'))
@@ -72,7 +86,17 @@ class InventoryTest extends TestCase
     {
         $this->post(route('inventory.ingredients.restock', 'taro'), ['mode' => 'add', 'qty' => 1000, 'note' => 'Delivery'])
             ->assertRedirect(route('inventory.ingredients.index'))
-            ->assertSessionHas('status', Controller::DEMO_MESSAGE);
+            ->assertSessionHas('status', 'Added 1 kg of Taro powder. Now 1 kg.');
+
+        $this->assertSame(1000.0, $this->stock('taro'));
+
+        $move = StockMovement::latest('id')->first();
+        $this->assertSame(['PURCHASE', 1000.0, 0.0, 1000.0, 600.0, 'Delivery', 5], [$move->type->value, $move->qty, $move->qty_before, $move->qty_after, $move->cost, $move->note, $move->user_id]);
+        $this->assertSame('Restocked', AuditLog::latest('id')->first()->action);
+        $this->assertSame('Liza Garcia', AuditLog::latest('id')->first()->user_name);
+
+        // Taro Milk Tea is back on the menu
+        $this->withSession(['qr' => ['type' => 'dine-in', 'table' => 1]])->get(route('customer.menu'))->assertSee('<template id="item-taro"', false);
     }
 
     public function test_restock_validation_messages(): void
@@ -90,11 +114,37 @@ class InventoryTest extends TestCase
 
     public function test_a_count_of_zero_is_allowed_and_a_matching_count_changes_nothing(): void
     {
-        $this->post(route('inventory.ingredients.restock', 'milk'), ['mode' => 'count', 'qty' => 0])
-            ->assertSessionHas('status', Controller::DEMO_MESSAGE);
+        $this->post(route('inventory.ingredients.restock', 'milk'), ['mode' => 'count', 'qty' => 0, 'note' => 'Spoiled'])
+            ->assertSessionHas('status', 'Fresh milk set to 0 ml.');
 
-        $this->post(route('inventory.ingredients.restock', 'milk'), ['mode' => 'count', 'qty' => 18000])
+        $this->assertSame(0.0, $this->stock('milk'));
+        $move = StockMovement::latest('id')->first();
+        $this->assertSame(['ADJUST', -18000.0, 18000.0, 0.0], [$move->type->value, $move->qty, $move->qty_before, $move->qty_after]);
+
+        $movements = StockMovement::count();
+        $this->post(route('inventory.ingredients.restock', 'almond'), ['mode' => 'count', 'qty' => 2500])
             ->assertSessionHas('status', 'Count matches. Nothing to change.');
+        $this->assertSame($movements, StockMovement::count(), 'a matching count leaves no movement');
+    }
+
+    public function test_a_count_can_raise_the_stock_too(): void
+    {
+        $this->post(route('inventory.ingredients.restock', 'eggs'), ['mode' => 'count', 'qty' => 90])->assertNotFound(); // the code is "egg"
+        $this->post(route('inventory.ingredients.restock', 'egg'), ['mode' => 'count', 'qty' => 90]);
+
+        $this->assertSame(90.0, $this->stock('egg'));
+        $this->assertSame(6.0, StockMovement::latest('id')->first()->qty);
+        $this->assertSame('Stock count', AuditLog::latest('id')->first()->action);
+    }
+
+    public function test_only_the_stock_clerk_and_the_owner_can_restock(): void
+    {
+        $this->asCashier()->post(route('inventory.ingredients.restock', 'taro'), ['mode' => 'add', 'qty' => 1000])->assertForbidden();
+        $this->asKitchen()->post(route('inventory.ingredients.restock', 'taro'), ['mode' => 'add', 'qty' => 1000])->assertForbidden();
+        $this->assertSame(0.0, $this->stock('taro'));
+
+        $this->asAdmin()->post(route('inventory.ingredients.restock', 'taro'), ['mode' => 'add', 'qty' => 1000])->assertRedirect();
+        $this->assertSame(1000.0, $this->stock('taro'));
     }
 
     // ---- Add / edit ----------------------------------------------------------------------------
@@ -111,7 +161,27 @@ class InventoryTest extends TestCase
     {
         $this->post(route('inventory.ingredients.store'), $this->ingredient())
             ->assertRedirect(route('inventory.ingredients.index'))
-            ->assertSessionHas('status', Controller::DEMO_MESSAGE);
+            ->assertSessionHas('status', 'Added Hazelnut syrup.');
+
+        $ingredient = Ingredient::where('name', 'Hazelnut syrup')->firstOrFail();
+        $this->assertSame('hazelnut-syrup', $ingredient->code);
+        $this->assertSame(['ml', 2000.0, 500.0, 1500.0, 0.45], [$ingredient->unit->value, $ingredient->stock_qty, $ingredient->reorder_level, $ingredient->restock_qty, $ingredient->unit_cost]);
+
+        // Opening stock is a movement, so the history starts with it
+        $move = $ingredient->movements()->first();
+        $this->assertSame(['ADJUST', 2000.0, 'Opening stock'], [$move->type->value, $move->qty, $move->note]);
+        $this->assertSame('Added ingredient', AuditLog::latest('id')->first()->action);
+
+        $this->get(route('inventory.ingredients.index'))->assertSee('Hazelnut syrup');
+    }
+
+    public function test_an_ingredient_without_opening_stock_starts_empty(): void
+    {
+        $this->post(route('inventory.ingredients.store'), $this->ingredient(['opening_stock' => null, 'name' => 'Pumpkin puree']));
+
+        $ingredient = Ingredient::where('name', 'Pumpkin puree')->firstOrFail();
+        $this->assertSame(0.0, $ingredient->stock_qty);
+        $this->assertSame(0, $ingredient->movements()->count());
     }
 
     public function test_add_validation(): void
@@ -130,12 +200,18 @@ class InventoryTest extends TestCase
     {
         $edit = ['_modal' => 'ingredientEdit', 'name' => 'Fresh milk (whole)', 'category' => 'Dairy', 'reorder_level' => 12000, 'restock_qty' => 20000, 'unit_cost' => 0.1];
 
-        $this->put(route('inventory.ingredients.update', 'milk'), $edit)->assertRedirect()->assertSessionHas('status', Controller::DEMO_MESSAGE);
+        $this->put(route('inventory.ingredients.update', 'milk'), $edit)->assertRedirect()->assertSessionHas('status', 'Saved Fresh milk (whole).');
+
+        $milk = Ingredient::where('code', 'milk')->first();
+        $this->assertSame(['Fresh milk (whole)', 12000.0, 20000.0, 0.1, 18000.0, 'ml'], [$milk->name, $milk->reorder_level, $milk->restock_qty, $milk->unit_cost, $milk->stock_qty, $milk->unit->value]);
+        $this->assertStringContainsString('name, reorder level, unit cost', AuditLog::latest('id')->first()->detail);
+
         $this->put(route('inventory.ingredients.update', 'milk'), ['name' => 'Fresh milk'] + $edit)->assertRedirect(); // its own name is fine
         $this->put(route('inventory.ingredients.update', 'milk'), ['name' => 'Oat milk'] + $edit)->assertSessionHasErrors('name');
         $this->put(route('inventory.ingredients.update', 'milk'), $edit + ['unit' => 'g'])->assertSessionHasErrors('unit');
         $this->put(route('inventory.ingredients.update', 'milk'), $edit + ['opening_stock' => 5])->assertSessionHasErrors('opening_stock');
         $this->put(route('inventory.ingredients.update', 'nope'), $edit)->assertNotFound();
+        $this->assertSame(18000.0, $this->stock('milk'));
     }
 
     public function test_a_failed_save_reopens_its_modal_with_the_typed_values(): void

@@ -4,8 +4,8 @@ namespace App\Http\Requests\Cashier;
 
 use App\Enums\DiscountType;
 use App\Enums\PaymentMethod;
+use App\Services\Orders;
 use App\Services\Pricing;
-use App\Support\DemoData;
 use App\Support\Format;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -60,7 +60,7 @@ class TakePaymentRequest extends FormRequest
     /** Amount due for this order after the discount being applied, computed on the server. */
     public function amountDue(): float
     {
-        $order = DemoData::order($this->route('order'));
+        $order = Orders::find($this->route('order'));
         $discount = $this->boolean('discount')
             ? Pricing::seniorDiscount($order['subtotal'], (int) $this->input('eligible_count'), (int) $this->input('diner_count'))
             : 0;

@@ -7,7 +7,7 @@ use App\Support\Showcase;
 use Illuminate\Support\Facades\URL;
 use Tests\TestCase;
 
-/** UI scaffold Step 7 — the public homepage and the demo system navigator. */
+/** The public homepage and the demo system navigator. */
 class HomeAndNavigatorTest extends TestCase
 {
     // ---- Homepage ------------------------------------------------------------------------------

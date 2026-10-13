@@ -5,11 +5,15 @@ namespace App\Http\Controllers\Inventory;
 use App\Enums\Unit;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Inventory\IngredientRequest;
+use App\Models\Ingredient;
+use App\Services\AuditLogger;
+use App\Services\Catalog;
+use App\Services\StockService;
 use App\Services\StockUsage;
-use App\Support\DemoData;
 use App\Support\StockLevel;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
 
@@ -24,8 +28,7 @@ class IngredientController extends Controller
         $category = (string) $request->query('cat');
         $q = trim((string) $request->query('q'));
 
-        // UI scaffold: DemoData. Phase 6 queries the ingredients table.
-        $all = collect(DemoData::ingredients())->map(fn ($i) => $i + ['level' => StockLevel::of($i)]);
+        $all = collect(Catalog::ingredients())->map(fn ($i) => $i + ['level' => StockLevel::of($i)]);
         $count = fn (callable $test) => $all->filter($test)->count();
         $low = $count(fn ($i) => $i['level'] === StockLevel::LOW);
         $out = $count(fn ($i) => $i['level'] === StockLevel::OUT);
@@ -44,7 +47,7 @@ class IngredientController extends Controller
 
         // Menu items customers can't order because an ingredient ran out
         $names = $all->pluck('name', 'code');
-        $blocked = collect(DemoData::items())
+        $blocked = collect(Catalog::menu())
             ->map(fn ($item) => ['name' => $item['name'], 'needs' => array_map(fn ($c) => $names[$c], StockUsage::shortFor($item))])
             ->filter(fn ($b) => $b['needs'])
             ->values();
@@ -67,16 +70,63 @@ class IngredientController extends Controller
         ]);
     }
 
-    /** Phase 6: create the ingredient; opening stock becomes an ADJUST movement ("Opening stock"). */
-    public function store(IngredientRequest $request): RedirectResponse
+    /** Creates the ingredient; opening stock becomes an ADJUST movement ("Opening stock"). */
+    public function store(IngredientRequest $request, StockService $stock): RedirectResponse
     {
-        return $this->demoSaved('inventory.ingredients.index');
+        $ingredient = DB::transaction(function () use ($request, $stock) {
+            $ingredient = Ingredient::create([
+                'code' => $this->uniqueCode($request->input('name')),
+                'name' => trim($request->input('name')),
+                'category' => trim($request->input('category')),
+                'unit' => $request->input('unit'),
+                'stock_qty' => 0,
+                'reorder_level' => $request->input('reorder_level'),
+                'restock_qty' => $request->input('restock_qty'),
+                'unit_cost' => $request->input('unit_cost'),
+            ]);
+            $stock->open($ingredient, (float) $request->input('opening_stock', 0), $request->user());
+
+            return $ingredient;
+        });
+
+        AuditLogger::record('Added ingredient', "{$ingredient->name} · {$ingredient->unit->value}", $request->user());
+
+        return redirect()->route('inventory.ingredients.index')->with('status', "Added {$ingredient->name}.");
     }
 
+    /** Changes the name, category and reorder numbers. The unit and the stock itself are not edited here. */
     public function update(IngredientRequest $request, string $ingredient): RedirectResponse
     {
-        DemoData::ingredient($ingredient) ?? abort(404);
+        $ing = Ingredient::where('code', $ingredient)->firstOrFail();
 
-        return $this->demoSaved('inventory.ingredients.index');
+        $changes = [
+            'name' => trim($request->input('name')),
+            'category' => trim($request->input('category')),
+            'reorder_level' => (float) $request->input('reorder_level'),
+            'restock_qty' => (float) $request->input('restock_qty'),
+            'unit_cost' => (float) $request->input('unit_cost'),
+        ];
+        $ing->fill($changes);
+        $what = collect($ing->getDirty())->keys()->map(fn ($field) => str_replace('_', ' ', $field))->join(', ');
+        $ing->save();
+
+        if ($what !== '') {
+            AuditLogger::record('Edited ingredient', "{$ing->name} · changed {$what}", $request->user());
+        }
+
+        return redirect()->route('inventory.ingredients.index')->with('status', "Saved {$ing->name}.");
+    }
+
+    /** "Oat milk" → oat-milk (and -2, -3… if that code is taken). */
+    private function uniqueCode(string $name): string
+    {
+        $base = Str::slug($name) ?: 'ingredient';
+        $code = $base;
+
+        for ($n = 2; Ingredient::where('code', $code)->exists(); $n++) {
+            $code = $base.'-'.$n;
+        }
+
+        return $code;
     }
 }

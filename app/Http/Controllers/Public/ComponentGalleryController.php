@@ -3,7 +3,8 @@
 namespace App\Http\Controllers\Public;
 
 use App\Http\Controllers\Controller;
-use App\Support\DemoData;
+use App\Services\Catalog;
+use App\Services\Orders;
 use Illuminate\View\View;
 
 /**
@@ -16,7 +17,7 @@ class ComponentGalleryController extends Controller
     {
         abort_unless(config('cafe.demo_mode'), 404);
 
-        return view('gallery.staff', ['orders' => DemoData::orders()]);
+        return view('gallery.staff', ['orders' => Orders::today()]);
     }
 
     public function customer(): View
@@ -24,9 +25,9 @@ class ComponentGalleryController extends Controller
         abort_unless(config('cafe.demo_mode'), 404);
 
         return view('gallery.customer', [
-            'orders' => DemoData::orders(),
-            'drink' => DemoData::item('latte'),
-            'meal' => DemoData::item('tapa'),
+            'orders' => Orders::today(),
+            'drink' => Catalog::item('latte'),
+            'meal' => Catalog::item('tapa'),
         ]);
     }
 }

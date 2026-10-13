@@ -2,12 +2,26 @@
 
 namespace Tests\Feature\Kitchen;
 
-use App\Http\Controllers\Controller;
+use App\Models\AuditLog;
+use App\Models\MenuItem;
+use App\Models\Order;
 use Tests\TestCase;
 
-/** UI scaffold Step 4 — kitchen display: board columns, ticket moves, recall, sold-out switches. */
+/** Kitchen display: board columns, ticket moves that really move the order, recall, sold-out switches. */
 class KitchenTest extends TestCase
 {
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->asKitchen();
+    }
+
+    private function stageOf(int $id): string
+    {
+        return Order::find($id)->status->value;
+    }
+
     public function test_board_shows_kitchen_orders_in_their_columns(): void
     {
         // New: 0010 (paid) and 0011 (cash on delivery) · Preparing: 0008, 0009 · Ready: 0006, 0007
@@ -45,17 +59,54 @@ class KitchenTest extends TestCase
 
     public function test_moves_are_checked_against_the_stage(): void
     {
-        $this->patch(route('kitchen.orders.status', 10), ['move' => 'start'])->assertRedirect(route('kitchen.display'))->assertSessionHas('status', Controller::DEMO_MESSAGE);
+        $this->patch(route('kitchen.orders.status', 10), ['move' => 'start'])->assertRedirect(route('kitchen.display'));
+        $this->assertSame('preparing', $this->stageOf(10));
+
         $this->patch(route('kitchen.orders.status', 11), ['move' => 'start'])->assertRedirect(); // COD goes to the kitchen unpaid
+        $this->assertSame('preparing', $this->stageOf(11));
+
         $this->patch(route('kitchen.orders.status', 8), ['move' => 'ready'])->assertRedirect();
-        $this->patch(route('kitchen.orders.status', 8), ['move' => 'back'])->assertRedirect();
+        $this->assertSame('ready', $this->stageOf(8));
+
+        $this->patch(route('kitchen.orders.status', 9), ['move' => 'back'])->assertRedirect(); // COD: back to unpaid
+        $this->assertSame('awaiting_payment', $this->stageOf(9));
+        $this->patch(route('kitchen.orders.status', 10), ['move' => 'back'])->assertRedirect(); // paid: back to paid
+        $this->assertSame('paid', $this->stageOf(10));
+
         $this->patch(route('kitchen.orders.status', 6), ['move' => 'done'])->assertRedirect();
+        $this->assertSame('completed', $this->stageOf(6));
         $this->patch(route('kitchen.orders.status', 1), ['move' => 'recall'])->assertRedirect(); // completed → ready
+        $this->assertSame('ready', $this->stageOf(1));
+        $this->patch(route('kitchen.orders.status', 7), ['move' => 'recall'])->assertRedirect(); // ready → preparing
+        $this->assertSame('preparing', $this->stageOf(7));
 
         $this->patch(route('kitchen.orders.status', 12), ['move' => 'start'])->assertForbidden(); // not paid
         $this->patch(route('kitchen.orders.status', 10), ['move' => 'done'])->assertForbidden();  // not ready
         $this->patch(route('kitchen.orders.status', 5), ['move' => 'recall'])->assertForbidden(); // cancelled
         $this->patch(route('kitchen.orders.status', 8), ['move' => 'fly'])->assertSessionHasErrors('move');
+        $this->patch(route('kitchen.orders.status', 999), ['move' => 'start'])->assertNotFound();
+        $this->assertSame('awaiting_payment', $this->stageOf(12));
+    }
+
+    public function test_every_move_is_logged_and_audited(): void
+    {
+        $this->patch(route('kitchen.orders.status', 10), ['move' => 'start']);
+        $this->patch(route('kitchen.orders.status', 10), ['move' => 'ready']);
+
+        $order = Order::find(10);
+        $this->assertSame(['awaiting_payment', 'paid', 'preparing', 'ready'], $order->statusLogs->pluck('status')->map->value->all());
+        $this->assertSame(4, $order->statusLogs->last()->changed_by, 'Ramon Cruz in the kitchen');
+        $this->assertSame(['Marked ready', 'Started preparing'], AuditLog::orderByDesc('id')->limit(2)->pluck('action')->all());
+        $this->assertSame('kitchen', AuditLog::latest('id')->first()->role);
+    }
+
+    public function test_an_unpaid_cod_order_cannot_be_served_until_the_cash_is_collected(): void
+    {
+        $this->patch(route('kitchen.orders.status', 11), ['move' => 'start']);
+        $this->patch(route('kitchen.orders.status', 11), ['move' => 'ready']);
+        $this->patch(route('kitchen.orders.status', 11), ['move' => 'done'])->assertForbidden();
+
+        $this->assertSame('ready', $this->stageOf(11));
     }
 
     public function test_board_partial_is_served_for_the_refresh(): void
@@ -87,10 +138,26 @@ class KitchenTest extends TestCase
     {
         $this->get(route('kitchen.display'))->assertSee('data-drawer hidden', false)->assertSee('Taro Milk Tea · sold out');
         $this->get(route('kitchen.display', ['drawer' => 1]))->assertDontSee('data-drawer hidden', false);
+    }
 
+    public function test_the_kitchen_can_mark_an_item_sold_out_and_available_again(): void
+    {
         $this->patch(route('kitchen.availability.update', 'latte'), ['available' => 0])
-            ->assertRedirect(route('kitchen.display', ['drawer' => 1]))
-            ->assertSessionHas('status', Controller::DEMO_MESSAGE);
+            ->assertRedirect(route('kitchen.display', ['drawer' => 1]));
+
+        $this->assertTrue(MenuItem::where('code', 'latte')->value('sold_out_override'));
+        $this->assertSame('Marked sold out', AuditLog::latest('id')->first()->action);
+
+        // Customers and the POS see it at once
+        $this->withSession(['qr' => ['type' => 'dine-in', 'table' => 1]])->get(route('customer.menu'))
+            ->assertSee('data-item="latte" data-search="café latte', false)->assertDontSee('<template id="item-latte"', false);
+        $this->post(route('customer.cart.store'), ['menu_item' => 'latte', 'qty' => 1, 'options' => ['temp' => 'hot', 'size' => 'm']])
+            ->assertSessionHasErrors(['menu_item' => 'Sorry, Café Latte just sold out.']);
+
+        $this->patch(route('kitchen.availability.update', 'latte'), ['available' => 1])->assertRedirect();
+        $this->assertNull(MenuItem::where('code', 'latte')->value('sold_out_override'));
+        $this->assertSame('Marked available', AuditLog::latest('id')->first()->action);
+
         $this->patch(route('kitchen.availability.update', 'pizza'), ['available' => 0])->assertNotFound();
         $this->patch(route('kitchen.availability.update', 'latte'), [])->assertSessionHasErrors('available');
     }

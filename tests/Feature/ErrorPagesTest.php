@@ -5,7 +5,7 @@ namespace Tests\Feature;
 use Illuminate\Support\Facades\Route;
 use Tests\TestCase;
 
-/** Scaffold Step 8 — friendly error pages in the café's look, with no stack traces and no session needed. */
+/** Friendly error pages in the café's look, with no stack traces and no session needed. */
 class ErrorPagesTest extends TestCase
 {
     protected function setUp(): void

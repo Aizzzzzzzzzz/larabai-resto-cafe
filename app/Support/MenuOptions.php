@@ -6,6 +6,24 @@ namespace App\Support;
 class MenuOptions
 {
     /**
+     * The form's picks as a flat list.
+     *
+     * @param  array<string, string|string[]>  $picked  group code => choice code(s)
+     * @return array<int, array{group: string, choice: string}>
+     */
+    public static function flatten(array $picked): array
+    {
+        $out = [];
+        foreach ($picked as $group => $choices) {
+            foreach ((array) $choices as $choice) {
+                $out[] = ['group' => (string) $group, 'choice' => (string) $choice];
+            }
+        }
+
+        return $out;
+    }
+
+    /**
      * @param  array<string, string|string[]>  $picked  group code => choice code(s)
      * @return string|null what's wrong, or null when the choice is valid
      */

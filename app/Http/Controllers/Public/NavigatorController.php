@@ -3,9 +3,11 @@
 namespace App\Http\Controllers\Public;
 
 use App\Http\Controllers\Controller;
+use App\Services\Catalog;
+use App\Services\Orders;
 use App\Services\QrCodes;
 use App\Support\CashierActions;
-use App\Support\DemoData;
+use App\Support\DemoAccounts;
 use App\Support\FloorPlan;
 use App\Support\StockLevel;
 use Illuminate\Support\Carbon;
@@ -21,13 +23,12 @@ class NavigatorController extends Controller
     {
         abort_unless(config('cafe.demo_mode'), 404);
 
-        // UI scaffold: DemoData. Phase 1+ count the real rows.
-        $orders = collect(DemoData::orders());
+        $orders = collect(Orders::today());
         $open = $orders->reject(fn ($o) => in_array($o['status'], ['completed', 'cancelled', 'voided'], true));
         $counts = [
             'unpaid' => $orders->filter(fn ($o) => CashierActions::unpaid($o))->count(),
             'kitchen' => $orders->whereIn('status', ['paid', 'preparing', 'ready'])->count(),
-            'low' => collect(DemoData::ingredients())->filter(fn ($i) => StockLevel::of($i) !== StockLevel::OK)->count(),
+            'low' => collect(Catalog::ingredients())->filter(fn ($i) => StockLevel::of($i) !== StockLevel::OK)->count(),
         ];
 
         return view('public.navigator', [
@@ -58,7 +59,7 @@ class NavigatorController extends Controller
     /** The five tables, then the counter QR for take-out and delivery. Opening one scans its (signed) QR link. */
     private function spots($open): array
     {
-        $spots = collect(DemoData::tables())->map(function ($t) use ($open) {
+        $spots = collect(Catalog::tables())->map(function ($t) use ($open) {
             $busy = $open->where('order_type', 'dine-in')->where('table_no', $t['table_no'])->count();
             $plan = FloorPlan::table($t['seats']);
 
@@ -133,8 +134,8 @@ class NavigatorController extends Controller
     /** Demo login for a role, e.g. "cashier / cashier123". */
     private function login(string $role): string
     {
-        $user = collect(DemoData::users())->first(fn ($u) => $u['role'] === $role && $u['is_active']);
+        $user = collect(Catalog::users())->first(fn ($u) => $u['role'] === $role && $u['is_active']);
 
-        return $user ? "{$user['username']} / {$user['password']}" : 'no active account';
+        return $user ? "{$user['username']} / ".(DemoAccounts::password($user['username']) ?? '…') : 'no active account';
     }
 }

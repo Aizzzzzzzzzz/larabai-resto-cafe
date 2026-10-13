@@ -7,24 +7,21 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration
 {
     /**
-     * Run the migrations.
+     * Staff accounts (document.md §4.1): sign in with a username, not an email, and a role decides the screen.
+     * There is no password reset by email — the owner resets a password in Users & roles.
      */
     public function up(): void
     {
         Schema::create('users', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
-            $table->string('email')->unique();
-            $table->timestamp('email_verified_at')->nullable();
+            $table->string('full_name', 100);
+            $table->string('username', 20)->unique();
             $table->string('password');
+            $table->string('role', 20); // admin | cashier | kitchen | inventory
+            $table->boolean('is_active')->default(true); // false = can't log in, history is kept
+            $table->timestamp('last_login_at')->nullable();
             $table->rememberToken();
             $table->timestamps();
-        });
-
-        Schema::create('password_reset_tokens', function (Blueprint $table) {
-            $table->string('email')->primary();
-            $table->string('token');
-            $table->timestamp('created_at')->nullable();
         });
 
         Schema::create('sessions', function (Blueprint $table) {
@@ -37,13 +34,9 @@ return new class extends Migration
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('users');
-        Schema::dropIfExists('password_reset_tokens');
         Schema::dropIfExists('sessions');
     }
 };

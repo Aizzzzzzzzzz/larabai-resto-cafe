@@ -3,10 +3,12 @@
 namespace Tests\Unit;
 
 use App\Enums\MovementType;
+use App\Services\Catalog;
+use App\Services\Orders;
 use App\Services\StockUsage;
-use App\Support\DemoData;
-use App\Support\DemoMovements;
 use App\Support\StockLevel;
+use Database\Seeders\Data\SampleData;
+use Database\Seeders\Data\SampleMovements;
 use Tests\TestCase;
 
 /** Stock rules: what an order uses, how levels are named and shown, and the sample history. */
@@ -38,7 +40,7 @@ class StockTest extends TestCase
 
     public function test_an_order_adds_up_its_lines(): void
     {
-        $total = StockUsage::forOrder(DemoData::order(8)['items']); // 2× iced large oat latte + chicken adobo
+        $total = StockUsage::forOrder(Orders::find(8)['items']); // 2× iced large oat latte + chicken adobo
 
         $this->assertSame(360.0, $total['oat']);
         $this->assertSame(2.0, $total['cup16']);
@@ -48,8 +50,8 @@ class StockTest extends TestCase
 
     public function test_short_items_and_where_an_ingredient_is_used(): void
     {
-        $this->assertSame(['taro'], StockUsage::shortFor(DemoData::item('taro')));
-        $this->assertSame([], StockUsage::shortFor(DemoData::item('latte')));
+        $this->assertSame(['taro'], StockUsage::shortFor(Catalog::item('taro')));
+        $this->assertSame([], StockUsage::shortFor(Catalog::item('latte')));
         $this->assertSame(['matcha', 'matchafrappe'], array_column(StockUsage::usedIn('matcha'), 'code'));
         $this->assertSame([], StockUsage::usedIn('oat')); // only through add-ons
     }
@@ -77,7 +79,7 @@ class StockTest extends TestCase
 
     public function test_every_sample_history_ends_at_the_ingredients_current_stock(): void
     {
-        foreach (DemoMovements::all() as $code => $moves) {
+        foreach (SampleMovements::all() as $code => $moves) {
             $this->assertSame(MovementType::Adjust, $moves[0]['type'], "{$code} starts with an opening count");
             $this->assertGreaterThanOrEqual(0, $moves[0]['qty'], "{$code} opening stock");
 
@@ -88,21 +90,21 @@ class StockTest extends TestCase
                 $this->assertEqualsWithDelta($balance, $move['qty_after'], 0.001, $code);
                 $this->assertGreaterThanOrEqual(0, $move['qty_after'], "{$code} never goes negative");
             }
-            $this->assertEqualsWithDelta(DemoData::ingredient($code)['stock_qty'], $balance, 0.001, $code);
+            $this->assertEqualsWithDelta(Catalog::ingredient($code)['stock_qty'], $balance, 0.001, $code);
         }
     }
 
     public function test_sample_history_follows_the_order_rules(): void
     {
-        $refs = fn (string $code, MovementType $type) => array_column(array_filter(DemoMovements::all()[$code] ?? [], fn ($m) => $m['type'] === $type), 'reference');
+        $refs = fn (string $code, MovementType $type) => array_column(array_filter(SampleMovements::all()[$code] ?? [], fn ($m) => $m['type'] === $type), 'reference');
 
         // Paid orders and cash-on-delivery orders used stock; cancelled and unpaid counter orders did not
-        $this->assertContains(DemoData::order(8)['order_no'], $refs('oat', MovementType::Sale));
-        $this->assertContains(DemoData::order(9)['order_no'], $refs('longganisa', MovementType::Sale)); // COD, in the kitchen
-        $this->assertNotContains(DemoData::order(5)['order_no'], $refs('brownsugar', MovementType::Sale)); // cancelled before paying
-        $this->assertNotContains(DemoData::order(13)['order_no'], $refs('ube', MovementType::Sale));      // unpaid counter cash
+        $this->assertContains(Orders::find(8)['order_no'], $refs('oat', MovementType::Sale));
+        $this->assertContains(Orders::find(9)['order_no'], $refs('longganisa', MovementType::Sale)); // COD, in the kitchen
+        $this->assertNotContains(Orders::find(5)['order_no'], $refs('brownsugar', MovementType::Sale)); // cancelled before paying
+        $this->assertNotContains(Orders::find(13)['order_no'], $refs('ube', MovementType::Sale));      // unpaid counter cash
 
         // The voided Café Mocha gave its chocolate sauce back
-        $this->assertSame([DemoData::order(4)['order_no']], $refs('choco', MovementType::Return));
+        $this->assertSame([Orders::find(4)['order_no']], $refs('choco', MovementType::Return));
     }
 }

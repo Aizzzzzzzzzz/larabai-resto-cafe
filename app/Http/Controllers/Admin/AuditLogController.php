@@ -4,13 +4,10 @@ namespace App\Http\Controllers\Admin;
 
 use App\Enums\Role;
 use App\Http\Controllers\Controller;
+use App\Models\AuditLog;
 use App\Support\AuditArea;
-use App\Support\DemoAudit;
-use App\Support\Format;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
-use Illuminate\Support\Carbon;
-use Illuminate\Support\Collection;
-use Illuminate\Support\Str;
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
@@ -23,9 +20,18 @@ class AuditLogController extends Controller
 
     public function index(Request $request): View
     {
-        $all = collect(DemoAudit::all());
-        $entries = $this->filtered($request, $all);
         $limit = max(self::PAGE, (int) $request->query('limit', self::PAGE));
+        $total = $this->filtered($request)->count();
+
+        $rows = $this->filtered($request)->limit($limit)->get()->map(fn (AuditLog $a) => [
+            'logged_at' => $a->logged_at->toDateTimeString(),
+            'user' => $a->user_name,
+            'role' => $a->role,
+            'action' => $a->action,
+            'detail' => (string) $a->detail,
+            'area' => AuditArea::of($a->action),
+            'role_label' => Role::tryFrom($a->role)?->label() ?? 'Customer',
+        ]);
 
         return view('admin.audit-logs', [
             'range' => $this->range($request),
@@ -33,28 +39,25 @@ class AuditLogController extends Controller
             'user' => (string) $request->query('user'),
             'q' => trim((string) $request->query('q')),
             'areas' => AuditArea::NAMES,
-            'users' => $all->pluck('user')->unique()->sort()->values(),
-            'total' => $entries->count(),
-            'rows' => $entries->take($limit)->map(fn ($a) => $a + [
-                'area' => AuditArea::of($a['action']),
-                'role_label' => Role::tryFrom($a['role'])?->label() ?? 'Customer',
-            ])->values(),
-            'nextLimit' => $entries->count() > $limit ? $limit + self::PAGE : null,
+            'users' => AuditLog::distinct()->orderBy('user_name')->pluck('user_name'),
+            'total' => $total,
+            'rows' => $rows,
+            'nextLimit' => $total > $limit ? $limit + self::PAGE : null,
         ]);
     }
 
     /** CSV of the log with the list's current filters (opens in Excel: UTF-8 with a byte-order mark). */
     public function export(Request $request): StreamedResponse
     {
-        $entries = $this->filtered($request, collect(DemoAudit::all()));
+        $query = $this->filtered($request);
         $name = 'brew-bite-audit-'.now()->format('Ymd').'.csv';
 
-        return response()->streamDownload(function () use ($entries) {
+        return response()->streamDownload(function () use ($query) {
             $out = fopen('php://output', 'w');
             fwrite($out, "\xEF\xBB\xBF");
             fputcsv($out, ['Date', 'User', 'Role', 'Area', 'Action', 'Details']);
-            foreach ($entries as $a) {
-                fputcsv($out, array_map([self::class, 'safeCell'], [$a['logged_at'], $a['user'], $a['role'], AuditArea::of($a['action'])[0], $a['action'], $a['detail']]));
+            foreach ($query->cursor() as $a) {
+                fputcsv($out, array_map([self::class, 'safeCell'], [$a->logged_at->toDateTimeString(), $a->user_name, $a->role, AuditArea::of($a->action)[0], $a->action, (string) $a->detail]));
             }
             fclose($out);
         }, $name, ['Content-Type' => 'text/csv; charset=UTF-8']);
@@ -71,24 +74,22 @@ class AuditLogController extends Controller
         return array_key_exists($request->query('range'), self::RANGES) ? $request->query('range') : '7';
     }
 
-    /** Newest first. */
-    private function filtered(Request $request, Collection $all): Collection
+    /** The log, newest first, with the screen's filters applied. @return Builder<AuditLog> */
+    private function filtered(Request $request): Builder
     {
-        $range = $this->range($request);
         $area = (string) $request->query('area');
         $user = (string) $request->query('user');
-        $q = Str::lower(trim((string) $request->query('q')));
+        $q = trim((string) $request->query('q'));
 
-        return $all
-            ->filter(fn ($a) => match ($range) {
-                'today' => Carbon::parse($a['logged_at'])->isToday(),
-                '7' => Carbon::parse($a['logged_at'])->greaterThanOrEqualTo(now()->subDays(7)),
-                default => true,
+        return AuditLog::query()
+            ->when($this->range($request) === 'today', fn (Builder $b) => $b->where('logged_at', '>=', now()->startOfDay()))
+            ->when($this->range($request) === '7', fn (Builder $b) => $b->where('logged_at', '>=', now()->subDays(7)))
+            ->when($area !== '', fn (Builder $b) => $b->where('module', $area))
+            ->when($user !== '', fn (Builder $b) => $b->where('user_name', $user))
+            ->when($q !== '', function (Builder $b) use ($q) {
+                $like = '%'.addcslashes($q, '%_\\').'%';
+                $b->where(fn (Builder $w) => $w->where('action', 'like', $like)->orWhere('detail', 'like', $like)->orWhere('user_name', 'like', $like));
             })
-            ->filter(fn ($a) => $area === '' || AuditArea::of($a['action'])[0] === $area)
-            ->filter(fn ($a) => $user === '' || $a['user'] === $user)
-            ->filter(fn ($a) => $q === '' || Str::contains(Str::lower($a['action'].' '.$a['detail'].' '.$a['user']), $q))
-            ->sortByDesc('logged_at')
-            ->values();
+            ->orderByDesc('logged_at')->orderByDesc('id');
     }
 }

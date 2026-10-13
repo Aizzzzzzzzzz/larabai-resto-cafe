@@ -3,8 +3,9 @@
 namespace App\Http\Controllers\Kitchen;
 
 use App\Http\Controllers\Controller;
+use App\Services\Catalog;
+use App\Services\Orders;
 use App\Support\CurrentStaff;
-use App\Support\DemoData;
 use App\Support\KitchenActions;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -14,12 +15,10 @@ class DisplayController extends Controller
 {
     public function index(Request $request): View
     {
-        $items = array_map(fn ($i) => $i + ['sold_out' => DemoData::isSoldOut($i)], DemoData::items());
-
         return view('kitchen.display', self::boardData() + [
             'staff' => CurrentStaff::get(),
-            'categories' => DemoData::categories(),
-            'menu' => collect($items)->groupBy('category'),
+            'categories' => Catalog::categories(),
+            'menu' => collect(Catalog::menu())->groupBy('category'),
             'drawerOpen' => $request->boolean('drawer'),
         ]);
     }
@@ -30,10 +29,10 @@ class DisplayController extends Controller
         return view('kitchen.partials.board', self::boardData());
     }
 
-    /** Columns, header stats and the recently-done strip. UI scaffold: today's sample orders. */
+    /** Columns, header stats and the recently-done strip, from today's orders. */
     private static function boardData(): array
     {
-        $orders = collect(DemoData::orders());
+        $orders = collect(Orders::today());
         $live = $orders->filter(fn ($o) => KitchenActions::onBoard($o))
             ->sortBy(fn ($o) => KitchenActions::startedAt($o))
             ->groupBy(fn ($o) => KitchenActions::column($o));

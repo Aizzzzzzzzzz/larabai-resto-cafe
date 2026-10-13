@@ -3,15 +3,15 @@
 namespace App\Http\Controllers\Cashier;
 
 use App\Http\Controllers\Controller;
+use App\Services\Orders;
 use App\Services\Pricing;
-use App\Support\DemoData;
 use Illuminate\View\View;
 
 class ReceiptController extends Controller
 {
     public function show(string $order): View
     {
-        $o = DemoData::order($order) ?? abort(404);
+        $o = Orders::find($order) ?? abort(404);
         $d = $o['discount'];
 
         return view('cashier.receipt', [

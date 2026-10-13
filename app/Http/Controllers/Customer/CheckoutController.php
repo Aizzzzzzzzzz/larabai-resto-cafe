@@ -2,24 +2,17 @@
 
 namespace App\Http\Controllers\Customer;
 
+use App\Exceptions\InsufficientStock;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Customer\CheckoutRequest;
 use App\Services\CustomerCart;
+use App\Services\MyOrders;
+use App\Services\OrderService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 
 class CheckoutController extends Controller
 {
-    /**
-     * UI scaffold: placing an order saves nothing — the customer is shown the sample order that
-     * matches their choice. Phase 3 creates the order (status awaiting_payment) instead.
-     */
-    private const DEMO_ORDER = [
-        'GCASH' => 'demo-0008',
-        'MAYA' => 'demo-0010',
-        'CASH' => ['dine-in' => 'demo-0012', 'take-out' => 'demo-0013', 'delivery' => 'demo-0011'],
-    ];
-
     public function create(CustomerCart $cart): View|RedirectResponse
     {
         if ($cart->isEmpty()) {
@@ -35,20 +28,37 @@ class CheckoutController extends Controller
         ]);
     }
 
-    public function store(CheckoutRequest $request, CustomerCart $cart): RedirectResponse
+    /**
+     * Places the order (status "awaiting payment"). Cash: it is placed now and the customer pays at the counter
+     * (or the rider). E-wallets: on to the simulated wallet screen, and the cart clears once that confirms.
+     */
+    public function store(CheckoutRequest $request, CustomerCart $cart, OrderService $orders): RedirectResponse
     {
+        $qr = $request->session()->get('qr');
         $method = $request->input('payment_method');
-        $token = $method === 'CASH' ? self::DEMO_ORDER['CASH'][$request->input('order_type')] : self::DEMO_ORDER[$method];
 
-        $request->session()->push('my_orders', $token);
+        try {
+            $order = $orders->place($cart->lines(), [
+                'source' => 'qr',
+                'order_type' => $request->input('order_type'),
+                'table_no' => $qr['table'] ?? null,
+                'payment_method' => $method,
+                'delivery_address' => $request->input('delivery_address'),
+                'delivery_landmark' => $request->input('delivery_landmark'),
+            ]);
+        } catch (InsufficientStock $e) {
+            // Only cash on delivery takes stock out at this point
+            return back()->withInput()->withErrors(['cart' => $e->getMessage()]);
+        }
 
-        // Cash: the order is placed now. E-wallets: the cart clears once the wallet screen confirms.
+        MyOrders::remember($order->public_token);
+
         if ($method === 'CASH') {
             $cart->clear();
 
-            return $this->demoSaved('customer.orders.success', ['order' => $token]);
+            return redirect()->route('customer.orders.success', $order->public_token);
         }
 
-        return $this->demoSaved('customer.pay.create', ['order' => $token]);
+        return redirect()->route('customer.pay.create', $order->public_token);
     }
 }

@@ -4,9 +4,10 @@ namespace Tests\Feature\Public;
 
 use App\Enums\Role;
 use App\Support\StaffScreens;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
-/** UI scaffold Step 7 — staff login: the form, demo accounts, role landing, safe "next", logout. */
+/** Staff login: the form, demo accounts, role landing, safe "next", throttling, logout. */
 class LoginTest extends TestCase
 {
     public function test_login_page_shows_the_shift_board_and_form(): void
@@ -31,7 +32,7 @@ class LoginTest extends TestCase
         $this->get(route('login'))->assertDontSee('Demo accounts')->assertDontSee('cashier123');
     }
 
-    /** @dataProvider landings */
+    #[DataProvider('landings')]
     public function test_each_role_lands_on_its_own_screen(string $username, string $password, string $path): void
     {
         $this->post(route('login.store'), ['username' => $username, 'password' => $password])->assertRedirect($path);
@@ -66,7 +67,7 @@ class LoginTest extends TestCase
             $this->from(route('login'))->post(route('login.store'), ['username' => $u, 'password' => $p])
                 ->assertRedirect(route('login'))->assertSessionHasErrors(['credentials' => $message]);
         }
-        $this->assertFalse(session()->has('demo_staff'));
+        $this->assertGuest();
     }
 
     public function test_the_failed_login_keeps_the_username_and_marks_the_fields(): void
@@ -112,7 +113,7 @@ class LoginTest extends TestCase
         $this->get(route('login'))->assertSee('Log in to open <b>Kitchen display</b>', false);
     }
 
-    /** @dataProvider unsafeNext */
+    #[DataProvider('unsafeNext')]
     public function test_next_can_not_send_people_elsewhere(string $next): void
     {
         $this->post(route('login.store'), ['username' => 'cashier', 'password' => 'cashier123', 'next' => $next])->assertRedirect('/cashier/pos');
@@ -160,8 +161,45 @@ class LoginTest extends TestCase
     {
         $this->post(route('login.store'), ['username' => 'cashier', 'password' => 'cashier123']);
 
+        $this->assertAuthenticated();
         $this->post(route('logout'))->assertRedirect(route('login'))->assertSessionHas('status', 'You’re logged out.');
-        $this->assertFalse(session()->has('demo_staff'));
+        $this->assertGuest();
+    }
+
+    public function test_a_demo_password_is_offered_only_while_it_is_still_the_password(): void
+    {
+        $this->get(route('login'))->assertSee('data-password="cashier123"', false);
+
+        \App\Models\User::where('username', 'cashier')->first()->update(['password' => 'changed-by-the-owner']);
+
+        $this->get(route('login'))->assertDontSee('changed-by-the-owner')->assertSee('data-username="cashier" data-password=""', false)
+            ->assertSee('data-username="cashier2" data-password="cashier123"', false); // another account still on its demo password
+    }
+
+    public function test_passwords_are_stored_hashed(): void
+    {
+        $stored = \App\Models\User::where('username', 'admin')->value('password');
+
+        $this->assertStringNotContainsString('admin123', $stored);
+        $this->assertTrue(\Illuminate\Support\Facades\Hash::check('admin123', $stored));
+    }
+
+    public function test_a_switched_off_account_cannot_sign_in(): void
+    {
+        \App\Models\User::where('username', 'cashier')->update(['is_active' => false]);
+
+        $this->post(route('login.store'), ['username' => 'cashier', 'password' => 'cashier123'])->assertSessionHasErrors('credentials');
+        $this->assertGuest();
+    }
+
+    public function test_signing_in_starts_a_new_session(): void
+    {
+        $this->get(route('login'));
+        $before = session()->getId();
+
+        $this->post(route('login.store'), ['username' => 'cashier', 'password' => 'cashier123']);
+
+        $this->assertNotSame($before, session()->getId(), 'against session fixation');
     }
 
     public function test_a_role_card_prefills_the_username(): void

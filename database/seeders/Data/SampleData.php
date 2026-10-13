@@ -1,24 +1,19 @@
 <?php
 
-namespace App\Support;
+namespace Database\Seeders\Data;
 
 use App\Enums\PaymentMethod;
 use App\Services\Pricing;
+use App\Support\OptionTemplates;
 
 /**
- * The mockup's sample data (larabai-mockup/js/app.js → BB_DATA), ported to PHP.
- *
- * UI scaffold: controllers pass these arrays to the views. The keys match the future model
- * attributes (development-plan.md §3), and Eloquent models support $model['key'] access too,
- * so views keep working when Phase 1+ swaps these arrays for queries. The same data then
- * becomes the database seeders.
+ * The mockup's sample data (larabai-mockup/js/app.js → BB_DATA), ported to PHP. The seeders turn it into
+ * database rows; nothing in the running app reads it. Orders are built relative to now, so a freshly
+ * seeded database always has "today's" orders in every stage.
  */
-class DemoData
+class SampleData
 {
     // ---------------------------------------------------------------- Menu
-
-    /** Category codes whose items are served in a cup with a lid. */
-    public const DRINK_CATEGORIES = ['coffee', 'noncoffee', 'milktea', 'frappe'];
 
     public static function categories(): array
     {
@@ -35,42 +30,42 @@ class DemoData
             'code' => $r[0],
             'name' => $r[1],
             'icon' => $r[2],
-            'is_drink' => in_array($r[0], self::DRINK_CATEGORIES, true),
+            'is_drink' => in_array($r[0], OptionTemplates::DRINK_CATEGORIES, true),
             'sort_order' => $i + 1,
         ], $rows, array_keys($rows));
     }
 
     public static function items(): array
     {
-        [$temp, $sugar] = [self::temp(), self::sugar()];
-        [$coffee, $drink, $tea, $meal] = [self::coffeeAddons(), self::drinkAddons(), self::teaAddons(), self::mealAddons()];
+        [$temp, $sugar] = [OptionTemplates::temp(), OptionTemplates::sugar()];
+        [$coffee, $drink, $tea, $meal] = [OptionTemplates::coffeeAddons(), OptionTemplates::drinkAddons(), OptionTemplates::teaAddons(), OptionTemplates::mealAddons()];
 
         // [code, category, name, price, description, tone, tags, option groups]
         $rows = [
             // Coffee
-            ['americano', 'coffee', 'Americano', 110, 'Double espresso over hot or cold water. Bold and clean.', ['#4A2E1C', '#9C6B45'], [], [$temp, self::size(20), $coffee]],
-            ['latte', 'coffee', 'Café Latte', 145, 'Espresso with steamed fresh milk and a thin layer of foam.', ['#7A4A26', '#C99467'], ['Best seller'], [$temp, self::size(20), $coffee]],
-            ['spanish', 'coffee', 'Spanish Latte', 160, 'Espresso, fresh milk and condensed milk. Sweet and creamy.', ['#8A5530', '#E0B585'], ['Best seller'], [$temp, self::size(20), $coffee]],
-            ['macchiato', 'coffee', 'Caramel Macchiato', 165, 'Vanilla milk marked with espresso and finished with caramel drizzle.', ['#B67A2C', '#F0CF8F'], [], [$temp, self::size(20), $coffee]],
-            ['mocha', 'coffee', 'Café Mocha', 160, 'Espresso, dark chocolate sauce and steamed milk.', ['#3E2418', '#8B5A3C'], [], [$temp, self::size(20), $coffee]],
-            ['seasalt', 'coffee', 'Sea Salt Latte', 170, 'Iced latte topped with our house sea salt cream.', ['#6E5240', '#D8C3AE'], ['New'], [self::size(20), $coffee]],
+            ['americano', 'coffee', 'Americano', 110, 'Double espresso over hot or cold water. Bold and clean.', ['#4A2E1C', '#9C6B45'], [], [$temp, OptionTemplates::size(20), $coffee]],
+            ['latte', 'coffee', 'Café Latte', 145, 'Espresso with steamed fresh milk and a thin layer of foam.', ['#7A4A26', '#C99467'], ['Best seller'], [$temp, OptionTemplates::size(20), $coffee]],
+            ['spanish', 'coffee', 'Spanish Latte', 160, 'Espresso, fresh milk and condensed milk. Sweet and creamy.', ['#8A5530', '#E0B585'], ['Best seller'], [$temp, OptionTemplates::size(20), $coffee]],
+            ['macchiato', 'coffee', 'Caramel Macchiato', 165, 'Vanilla milk marked with espresso and finished with caramel drizzle.', ['#B67A2C', '#F0CF8F'], [], [$temp, OptionTemplates::size(20), $coffee]],
+            ['mocha', 'coffee', 'Café Mocha', 160, 'Espresso, dark chocolate sauce and steamed milk.', ['#3E2418', '#8B5A3C'], [], [$temp, OptionTemplates::size(20), $coffee]],
+            ['seasalt', 'coffee', 'Sea Salt Latte', 170, 'Iced latte topped with our house sea salt cream.', ['#6E5240', '#D8C3AE'], ['New'], [OptionTemplates::size(20), $coffee]],
 
             // Non-coffee
-            ['matcha', 'noncoffee', 'Matcha Latte', 165, 'Ceremonial-grade matcha whisked with milk.', ['#3F6B3A', '#A9C98A'], ['Best seller'], [$temp, self::size(20), $drink]],
-            ['choco', 'noncoffee', 'Classic Chocolate', 140, 'Rich Davao cacao chocolate with steamed milk.', ['#4B2A20', '#9E6650'], [], [$temp, self::size(20), $drink]],
-            ['strawberry', 'noncoffee', 'Strawberry Milk', 150, 'Baguio strawberry jam layered with cold fresh milk.', ['#B8475B', '#F2B5BF'], [], [self::size(20), $drink]],
-            ['ube', 'noncoffee', 'Ube Latte', 155, 'Purple yam halaya blended with milk. No coffee.', ['#5B3A80', '#B79AD8'], ['New'], [$temp, self::size(20), $drink]],
+            ['matcha', 'noncoffee', 'Matcha Latte', 165, 'Ceremonial-grade matcha whisked with milk.', ['#3F6B3A', '#A9C98A'], ['Best seller'], [$temp, OptionTemplates::size(20), $drink]],
+            ['choco', 'noncoffee', 'Classic Chocolate', 140, 'Rich Davao cacao chocolate with steamed milk.', ['#4B2A20', '#9E6650'], [], [$temp, OptionTemplates::size(20), $drink]],
+            ['strawberry', 'noncoffee', 'Strawberry Milk', 150, 'Baguio strawberry jam layered with cold fresh milk.', ['#B8475B', '#F2B5BF'], [], [OptionTemplates::size(20), $drink]],
+            ['ube', 'noncoffee', 'Ube Latte', 155, 'Purple yam halaya blended with milk. No coffee.', ['#5B3A80', '#B79AD8'], ['New'], [$temp, OptionTemplates::size(20), $drink]],
 
             // Milk tea
-            ['wintermelon', 'milktea', 'Wintermelon Milk Tea', 120, 'Black tea with wintermelon syrup and milk.', ['#9A7A4E', '#E3CFA6'], [], [self::size(20), $sugar, $tea]],
-            ['okinawa', 'milktea', 'Okinawa Milk Tea', 130, 'Roasted brown sugar milk tea with a toffee finish.', ['#7C5434', '#CDA27A'], [], [self::size(20), $sugar, $tea]],
-            ['brownsugar', 'milktea', 'Brown Sugar Pearl Milk', 140, 'Fresh milk with warm brown sugar pearls. Pearls included.', ['#5E3A1E', '#C8925C'], ['Best seller'], [self::size(20), $sugar, $tea]],
-            ['taro', 'milktea', 'Taro Milk Tea', 130, 'Creamy taro root with jasmine tea.', ['#7E6A9E', '#CFC3E6'], [], [self::size(20), $sugar, $tea]],
+            ['wintermelon', 'milktea', 'Wintermelon Milk Tea', 120, 'Black tea with wintermelon syrup and milk.', ['#9A7A4E', '#E3CFA6'], [], [OptionTemplates::size(20), $sugar, $tea]],
+            ['okinawa', 'milktea', 'Okinawa Milk Tea', 130, 'Roasted brown sugar milk tea with a toffee finish.', ['#7C5434', '#CDA27A'], [], [OptionTemplates::size(20), $sugar, $tea]],
+            ['brownsugar', 'milktea', 'Brown Sugar Pearl Milk', 140, 'Fresh milk with warm brown sugar pearls. Pearls included.', ['#5E3A1E', '#C8925C'], ['Best seller'], [OptionTemplates::size(20), $sugar, $tea]],
+            ['taro', 'milktea', 'Taro Milk Tea', 130, 'Creamy taro root with jasmine tea.', ['#7E6A9E', '#CFC3E6'], [], [OptionTemplates::size(20), $sugar, $tea]],
 
             // Frappe
-            ['javachip', 'frappe', 'Java Chip Frappe', 175, 'Coffee, chocolate chips and milk blended with ice.', ['#3A2418', '#7F5641'], [], [self::size(25), $coffee]],
-            ['cookies', 'frappe', 'Cookies & Cream Frappe', 170, 'Crushed chocolate cookies blended with vanilla cream.', ['#2C2C2C', '#BDBDB5'], [], [self::size(25), $drink]],
-            ['matchafrappe', 'frappe', 'Matcha Frappe', 180, 'Matcha blended with milk and ice, topped with cream.', ['#4E7A3E', '#C3DDA6'], [], [self::size(25), $drink]],
+            ['javachip', 'frappe', 'Java Chip Frappe', 175, 'Coffee, chocolate chips and milk blended with ice.', ['#3A2418', '#7F5641'], [], [OptionTemplates::size(25), $coffee]],
+            ['cookies', 'frappe', 'Cookies & Cream Frappe', 170, 'Crushed chocolate cookies blended with vanilla cream.', ['#2C2C2C', '#BDBDB5'], [], [OptionTemplates::size(25), $drink]],
+            ['matchafrappe', 'frappe', 'Matcha Frappe', 180, 'Matcha blended with milk and ice, topped with cream.', ['#4E7A3E', '#C3DDA6'], [], [OptionTemplates::size(25), $drink]],
 
             // Rice meals
             ['tapa', 'meals', 'Beef Tapa', 199, 'House-cured beef tapa, garlic rice, fried egg and atchara.', ['#8A3B22', '#E09A63'], ['Best seller'], [$meal]],
@@ -81,15 +76,15 @@ class DemoData
 
             // Pastries & snacks
             ['croissant', 'pastries', 'Butter Croissant', 95, 'Flaky all-butter croissant, baked every morning.', ['#B07A2E', '#F2D49B'], [], [
-                self::group('warm', 'Serving', 'single', true, [['asis', 'As is', 0], ['warmed', 'Warmed', 0]]),
+                OptionTemplates::group('warm', 'Serving', 'single', true, [['asis', 'As is', 0], ['warmed', 'Warmed', 0]]),
             ]],
             ['ensaymada', 'pastries', 'Ensaymada', 75, 'Soft brioche with butter, sugar and grated cheese.', ['#C49A3C', '#F6E2A8'], [], []],
             ['pandesal', 'pastries', 'Cheese Pandesal (4 pcs)', 85, 'Warm pandesal stuffed with melty cheese.', ['#A06A2C', '#E8C08A'], [], []],
             ['clubhouse', 'pastries', 'Clubhouse Sandwich', 195, 'Triple-decker with chicken, ham, egg and cheese.', ['#8C6A3A', '#DCC291'], [], [
-                self::group('side', 'Add a side', 'multi', false, [['fries', 'Side of fries', 50]]),
+                OptionTemplates::group('side', 'Add a side', 'multi', false, [['fries', 'Side of fries', 50]]),
             ]],
             ['fries', 'pastries', 'Flavored Fries', 110, 'Crispy shoestring fries tossed in your choice of flavor.', ['#C8902A', '#F7DB86'], [], [
-                self::group('flavor', 'Flavor', 'single', true, [['cheese', 'Cheese', 0], ['bbq', 'Barbecue', 0], ['sour', 'Sour cream', 0]]),
+                OptionTemplates::group('flavor', 'Flavor', 'single', true, [['cheese', 'Cheese', 0], ['bbq', 'Barbecue', 0], ['sour', 'Sour cream', 0]]),
             ]],
         ];
 
@@ -102,55 +97,11 @@ class DemoData
             'tone' => $r[5],
             'is_best_seller' => in_array('Best seller', $r[6], true),
             'is_new' => in_array('New', $r[6], true),
-            'is_drink' => in_array($r[1], self::DRINK_CATEGORIES, true),
+            'is_drink' => in_array($r[1], OptionTemplates::DRINK_CATEGORIES, true),
             'sold_out_override' => null,
             'is_active' => true,
             'options' => $r[7],
         ], $rows);
-    }
-
-    public static function item(string $code): ?array
-    {
-        return collect(self::items())->firstWhere('code', $code);
-    }
-
-    /**
-     * Sold out = the kitchen's switch when set, otherwise "an ingredient can't cover one serving"
-     * (recipe + a 12 oz cup and a lid for drinks), as in the mockup's menu.isSoldOut().
-     */
-    public static function isSoldOut(array $item): bool
-    {
-        if ($item['sold_out_override'] !== null) {
-            return (bool) $item['sold_out_override'];
-        }
-
-        $stock = array_column(self::ingredients(), 'stock_qty', 'code');
-        $needs = self::recipes()[$item['code']] ?? [];
-        if ($item['is_drink']) {
-            $needs = [...$needs, ['cup12', 1], ['lid', 1]];
-        }
-
-        foreach ($needs as [$ingredient, $qty]) {
-            if (($stock[$ingredient] ?? 0) < $qty) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    /** Option-group templates the admin can attach to new menu items. */
-    public static function optionTemplates(): array
-    {
-        return [
-            'coffee' => ['label' => 'Coffee drink (hot/iced, size, coffee add-ons)', 'groups' => [self::temp(), self::size(20), self::coffeeAddons()]],
-            'icedcoffee' => ['label' => 'Iced coffee (size, coffee add-ons)', 'groups' => [self::size(20), self::coffeeAddons()]],
-            'drink' => ['label' => 'Non-coffee drink (hot/iced, size, add-ons)', 'groups' => [self::temp(), self::size(20), self::drinkAddons()]],
-            'milktea' => ['label' => 'Milk tea (size, sugar level, toppings)', 'groups' => [self::size(20), self::sugar(), self::teaAddons()]],
-            'frappe' => ['label' => 'Frappe (size, add-ons)', 'groups' => [self::size(25), self::drinkAddons()]],
-            'meal' => ['label' => 'Rice meal (extra rice, egg, atchara)', 'groups' => [self::mealAddons()]],
-            'none' => ['label' => 'No options', 'groups' => []],
-        ];
     }
 
     // ---------------------------------------------------------------- Inventory
@@ -214,11 +165,6 @@ class DemoData
         ], $rows);
     }
 
-    public static function ingredient(string $code): ?array
-    {
-        return collect(self::ingredients())->firstWhere('code', $code);
-    }
-
     /**
      * Ingredients per serving (same at every size): item code => [[ingredient code, qty], …].
      * Drinks also use one cup (12 or 16 oz by size) and one lid, added automatically.
@@ -253,28 +199,6 @@ class DemoData
             'pandesal' => [['pandesal', 4]],
             'clubhouse' => [['bread', 3], ['chicken', 60], ['ham', 40], ['egg', 1], ['cheese', 2]],
             'fries' => [['fries', 150], ['seasoning', 5]],
-        ];
-    }
-
-    /** What each option uses: "group:choice" => add [[ingredient, qty]] or replace [from, to]. */
-    public static function optionRecipes(): array
-    {
-        return [
-            'addons:shot' => ['add' => [['beans', 9]]],
-            'addons:oat' => ['replace' => ['milk', 'oat']],
-            'addons:almond' => ['replace' => ['milk', 'almond']],
-            'addons:caramel' => ['add' => [['caramel', 15]]],
-            'addons:vanilla' => ['add' => [['vanilla', 15]]],
-            'addons:whip' => ['add' => [['cream', 30]]],
-            'addons:seasalt' => ['add' => [['cream', 30]]],
-            'addons:pearl' => ['add' => [['pearls', 50]]],
-            'addons:nata' => ['add' => [['nata', 40]]],
-            'addons:pudding' => ['add' => [['pudding', 1]]],
-            'addons:cheese' => ['add' => [['creamcheese', 30]]],
-            'addons:rice' => ['add' => [['rice', 150]]],
-            'addons:egg' => ['add' => [['egg', 1]]],
-            'addons:atchara' => ['add' => [['atchara', 40]]],
-            'side:fries' => ['add' => [['fries', 120], ['seasoning', 3]]],
         ];
     }
 
@@ -442,7 +366,7 @@ class DemoData
     /** @param  array<string, string|string[]>  $chosen  group code => choice code(s) */
     private static function buildLine(string $code, int $qty, array $chosen, ?string $notes): array
     {
-        $item = self::item($code);
+        $item = collect(self::items())->firstWhere('code', $code);
         $options = [];
 
         foreach ($item['options'] as $group) {
@@ -460,57 +384,5 @@ class DemoData
             'notes' => $notes,
             'options' => $options,
         ];
-    }
-
-    // ---------------------------------------------------------------- Option groups
-
-    private static function group(string $code, string $name, string $type, bool $required, array $choices, ?string $default = null): array
-    {
-        return [
-            'code' => $code,
-            'name' => $name,
-            'type' => $type,
-            'required' => $required,
-            'default' => $default ?? ($type === 'single' ? $choices[0][0] : null),
-            'choices' => array_map(fn ($c) => ['code' => $c[0], 'name' => $c[1], 'price' => $c[2]], $choices),
-        ];
-    }
-
-    private static function temp(): array
-    {
-        return self::group('temp', 'Temperature', 'single', true, [['hot', 'Hot', 0], ['iced', 'Iced', 0]]);
-    }
-
-    private static function size(int $large): array
-    {
-        return self::group('size', 'Size', 'single', true, [['m', 'Medium (12 oz)', 0], ['l', 'Large (16 oz)', $large]]);
-    }
-
-    private static function sugar(): array
-    {
-        return self::group('sugar', 'Sugar level', 'single', true, [['s0', '0%', 0], ['s25', '25%', 0], ['s50', '50%', 0], ['s75', '75%', 0], ['s100', '100%', 0]], 's100');
-    }
-
-    private static function coffeeAddons(): array
-    {
-        return self::group('addons', 'Add-ons', 'multi', false, [
-            ['shot', 'Extra espresso shot', 35], ['oat', 'Oat milk', 40], ['almond', 'Almond milk', 35],
-            ['caramel', 'Caramel drizzle', 20], ['vanilla', 'Vanilla syrup', 20], ['whip', 'Whipped cream', 20],
-        ]);
-    }
-
-    private static function drinkAddons(): array
-    {
-        return self::group('addons', 'Add-ons', 'multi', false, [['oat', 'Oat milk', 40], ['whip', 'Whipped cream', 20], ['seasalt', 'Sea salt cream', 30]]);
-    }
-
-    private static function teaAddons(): array
-    {
-        return self::group('addons', 'Add-ons', 'multi', false, [['pearl', 'Black pearls', 20], ['nata', 'Nata de coco', 20], ['pudding', 'Egg pudding', 25], ['cheese', 'Cream cheese foam', 35]]);
-    }
-
-    private static function mealAddons(): array
-    {
-        return self::group('addons', 'Add-ons', 'multi', false, [['rice', 'Extra garlic rice', 25], ['egg', 'Extra fried egg', 20], ['atchara', 'Atchara', 15]]);
     }
 }

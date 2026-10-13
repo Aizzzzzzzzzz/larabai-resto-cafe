@@ -9,7 +9,7 @@ use App\Services\CustomerCart;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 
-/** The cart lives in the session, so these work for real even in the UI scaffold. */
+/** The cart lives in the customer's session until they check out, so it needs no table. */
 class CartController extends Controller
 {
     public function index(CustomerCart $cart): View

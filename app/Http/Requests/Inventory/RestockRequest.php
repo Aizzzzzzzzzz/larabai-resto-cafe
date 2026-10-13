@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Inventory;
 
+use App\Services\Catalog;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -13,7 +14,7 @@ class RestockRequest extends FormRequest
 {
     protected function prepareForValidation(): void
     {
-        abort_unless(\App\Support\DemoData::ingredient((string) $this->route('ingredient')), 404);
+        abort_unless(Catalog::ingredient((string) $this->route('ingredient')), 404);
     }
 
     public function rules(): array

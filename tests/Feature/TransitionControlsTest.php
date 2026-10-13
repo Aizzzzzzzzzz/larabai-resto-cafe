@@ -3,17 +3,25 @@
 namespace Tests\Feature;
 
 use App\Enums\OrderStatus;
-use App\Support\DemoData;
+use App\Services\Catalog;
+use App\Services\Orders;
 use Tests\TestCase;
 
 /**
  * Playbook rule: "every transition needs a visible control — a workflow arrow with no button is a bug
  * factory". One test per row of the order state table in development-plan.md §3, checking the control is on
  * the screen of whoever does the move, pointing at the right route. (The server side of each move is covered
- * in the module tests; Phase 2's OrderWorkflow tests take over the rules.)
+ * in the module tests and WorkflowTest.)
  */
 class TransitionControlsTest extends TestCase
 {
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->asAdmin(); // the owner can open every module's screens
+    }
+
     private function page(string $url, array $session = []): string
     {
         return $this->withSession($session + ['qr' => ['type' => 'dine-in', 'table' => 3], 'cart' => $this->cart(), 'my_orders' => ['demo-0012', 'demo-0008']])
@@ -44,7 +52,12 @@ class TransitionControlsTest extends TestCase
 
     public function test_2_the_customer_pays_in_the_simulated_wallet(): void
     {
-        $this->assertHasForm($this->page(route('customer.pay.create', 'demo-0008')), route('customer.pay.store', 'demo-0008'), null, 'Pay ₱599.00');
+        // The wallet screen belongs to an order that is still waiting for its wallet payment, so place one first
+        $this->withSession(['qr' => ['type' => 'dine-in', 'table' => 3], 'cart' => $this->cart()])
+            ->post(route('customer.checkout.store'), ['order_type' => 'dine-in', 'payment_method' => 'GCASH']);
+        $token = \App\Models\Order::latest('id')->value('public_token');
+
+        $this->assertHasForm($this->page(route('customer.pay.create', $token), ['my_orders' => [$token]]), route('customer.pay.store', $token), null, 'Pay ₱145.00');
     }
 
     public function test_3_the_cashier_takes_payment_from_the_orders_list(): void
@@ -135,7 +148,7 @@ class TransitionControlsTest extends TestCase
             OrderStatus::Ready->value => ['cashier.orders.complete', 6],
         ];
 
-        foreach (DemoData::orders() as $order) {
+        foreach (Orders::today() as $order) {
             if (! isset($forward[$order['status']])) {
                 $this->assertContains($order['status'], ['completed', 'cancelled', 'voided'], "{$order['order_no']} is {$order['status']} and has no way forward");
             }

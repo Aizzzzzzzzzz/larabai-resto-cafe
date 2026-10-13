@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Public;
 
 use App\Http\Controllers\Controller;
-use App\Support\DemoData;
+use App\Services\Catalog;
 use App\Support\Showcase;
 use Illuminate\View\View;
 
@@ -12,15 +12,14 @@ class HomeController extends Controller
 {
     public function index(): View
     {
-        // UI scaffold: DemoData. Phase 1 reads the menu and the tables from the database.
-        $tables = collect(DemoData::tables())->where('is_active', true);
+        $tables = collect(Catalog::tables())->where('is_active', true);
 
         return view('public.home', [
             'cups' => Showcase::cups(),
             // Best sellers and the newest items, unless they've run out
-            'favorites' => collect(DemoData::items())->filter(fn ($i) => ($i['is_best_seller'] || $i['is_new']) && ! DemoData::isSoldOut($i))->values(),
+            'favorites' => collect(Catalog::menu())->filter(fn ($i) => ($i['is_best_seller'] || $i['is_new']) && ! Catalog::isSoldOut($i))->values(),
             'stats' => [
-                'items' => count(DemoData::items()),
+                'items' => count(Catalog::menu()),
                 'tables' => $tables->count(),
                 'seats' => $tables->sum('seats'),
             ],

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Support;
+namespace Database\Seeders\Data;
 
 use App\Services\Pricing;
 use Illuminate\Support\Carbon;
@@ -8,48 +8,22 @@ use Random\Engine\Mt19937;
 use Random\Randomizer;
 
 /**
- * Sales the admin dashboard reports on (document.md §3.7). Ports the mockup's history.sample():
- * the 30 days before today are generated (seeded per day, so the numbers are stable), and today's
- * paid sample orders are the real ones from DemoData.
- *
- * UI scaffold only — Phase 7 reports from the orders / payments tables instead.
+ * Sample sales history for the demo database (document.md §3.7). Ports the mockup's history.sample():
+ * the 30 days before today are generated (seeded per day, so the numbers are stable) and written to the
+ * orders / payments tables by SampleHistorySeeder, so the dashboard has something to report on.
  */
-class DemoSales
+class SampleSales
 {
     private static ?array $history = null;
 
-    /**
-     * Paid, not-voided orders paid in [$from, $to), each as:
-     * paid_at, items [{menu_item, name, qty, unit_price}], subtotal, discount, total, method, type.
-     */
-    public static function between(Carbon $from, Carbon $to): array
-    {
-        $today = collect(DemoData::orders())
-            ->filter(fn ($o) => $o['paid_at'] && $o['status'] !== 'voided')
-            ->map(fn ($o) => [
-                'paid_at' => $o['paid_at'],
-                'items' => array_map(fn ($l) => ['menu_item' => $l['menu_item'], 'name' => $l['name'], 'qty' => $l['qty'], 'unit_price' => $l['unit_price']], $o['items']),
-                'subtotal' => $o['subtotal'],
-                'discount' => (float) $o['discount_amount'],
-                'total' => $o['total'],
-                'method' => $o['payment_method'],
-                'type' => $o['order_type'],
-            ])->all();
-
-        return array_values(array_filter(
-            array_merge(self::history(), $today),
-            fn ($o) => ($t = Carbon::parse($o['paid_at'])) >= $from && $t < $to,
-        ));
-    }
-
     /** The 30 generated days before today. */
-    private static function history(): array
+    public static function history(): array
     {
         if (self::$history !== null && self::$history['for'] === now()->toDateString()) {
             return self::$history['orders'];
         }
 
-        $items = DemoData::items();
+        $items = SampleData::items();
         $popular = ['latte' => 9, 'spanish' => 9, 'brownsugar' => 8, 'matcha' => 7, 'tapa' => 6, 'americano' => 6, 'macchiato' => 5, 'wintermelon' => 5, 'javachip' => 4, 'adobo' => 4, 'croissant' => 4, 'okinawa' => 4, 'mocha' => 3, 'seasalt' => 3, 'ube' => 3, 'tocino' => 3, 'fries' => 3, 'choco' => 2, 'strawberry' => 2, 'cookies' => 2, 'matchafrappe' => 2, 'longganisa' => 2, 'spam' => 2, 'ensaymada' => 2, 'pandesal' => 2, 'clubhouse' => 2, 'taro' => 2];
         $itemWeights = array_map(fn ($i) => [$i, $popular[$i['code']] ?? 1], $items);
         $hours = [[7, 4], [8, 7], [9, 6], [10, 5], [11, 7], [12, 12], [13, 10], [14, 6], [15, 9], [16, 10], [17, 8], [18, 7], [19, 6], [20, 5], [21, 3]];

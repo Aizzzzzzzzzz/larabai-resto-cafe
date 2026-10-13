@@ -2,24 +2,29 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
+/**
+ * `php artisan db:seed` — the café's starting data. The menu, stock and tables are always seeded; in demo mode
+ * (CAFE_DEMO_MODE) today's sample orders and 30 days of sales history come with them, so every screen has
+ * something to show. A real café turns demo mode off and gets only one admin account.
+ */
 class DatabaseSeeder extends Seeder
 {
-    use WithoutModelEvents;
-
-    /**
-     * Seed the application's database.
-     */
     public function run(): void
     {
-        // User::factory(10)->create();
-
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
+        $this->call([
+            UserSeeder::class,
+            DiningTableSeeder::class,
+            IngredientSeeder::class,
+            MenuSeeder::class,
         ]);
+
+        if (config('cafe.demo_mode')) {
+            $this->call([
+                SampleOrdersSeeder::class,
+                SampleHistorySeeder::class,
+            ]);
+        }
     }
 }

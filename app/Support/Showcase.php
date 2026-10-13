@@ -2,6 +2,8 @@
 
 namespace App\Support;
 
+use App\Services\Catalog;
+
 /**
  * Homepage "What's in the glass" (mockup home/index CUPS): three best sellers drawn as layered glasses.
  * Names and prices come from the menu, so a price change shows up here too.
@@ -29,7 +31,7 @@ class Showcase
 
         $out = [];
         foreach ($cups as $cup) {
-            if ($item = DemoData::item($cup['code'])) {
+            if ($item = Catalog::item($cup['code'])) {
                 $out[] = $cup + ['name' => $item['name'], 'price' => $item['price']];
             }
         }

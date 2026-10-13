@@ -33,8 +33,9 @@
 
     @stack('modals')
 
-    {{-- Flash message from the last form submit, shown as the mockup's toast --}}
-    <div class="toast-pop" role="status" @unless (session('status')) hidden @endunless>{{ session('status') }}</div>
+    {{-- Flash message from the last form submit, shown as the mockup's toast (an error message in red) --}}
+    @php($flash = session('status') ?? session('error'))
+    <div class="toast-pop{{ session('error') && ! session('status') ? ' toast-error' : '' }}" role="status" @unless ($flash) hidden @endunless>{{ $flash }}</div>
 
     @stack('scripts')
 </body>

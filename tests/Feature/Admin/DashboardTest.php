@@ -2,12 +2,27 @@
 
 namespace Tests\Feature\Admin;
 
+use App\Models\Order;
 use App\View\Components\BarChart;
+use Database\Seeders\SampleHistorySeeder;
 use Tests\TestCase;
 
-/** UI scaffold Step 6 — admin dashboard: KPIs, charts, best sellers, activity, attention list. */
+/** Admin dashboard: KPIs and charts computed from the orders and payments tables, best sellers, activity, attention list. */
 class DashboardTest extends TestCase
 {
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->asAdmin();
+    }
+
+    /** The 30 days before today, as finished orders. */
+    private function withHistory(): void
+    {
+        $this->seed(SampleHistorySeeder::class);
+    }
+
     public function test_dashboard_shows_the_figures_and_charts(): void
     {
         $this->get(route('admin.dashboard'))
@@ -19,8 +34,41 @@ class DashboardTest extends TestCase
             ->assertSee('class="share-bar"', false);
     }
 
+    public function test_todays_figures_come_from_the_paid_orders(): void
+    {
+        // Today's paid orders that weren't voided: 1, 2, 3, 6, 7, 8, 10 (9 is cash on delivery and not collected yet)
+        $paid = Order::whereNotNull('paid_at')->where('status', '!=', 'voided');
+        $total = (float) $paid->sum('total');
+        $this->assertSame(7, $paid->count());
+
+        $this->get(route('admin.dashboard'))
+            ->assertSee(peso($total))
+            ->assertSee(peso($total / 7))
+            ->assertSee(peso(72.86)); // the Senior discount on order 2
+    }
+
+    public function test_a_new_payment_shows_up_at_once(): void
+    {
+        $before = (float) Order::whereNotNull('paid_at')->where('status', '!=', 'voided')->sum('total');
+        $this->post(route('login.store'), ['username' => 'cashier', 'password' => 'cashier123']);
+        $this->post(route('cashier.payments.store', 12), ['method' => 'GCASH']);
+        $this->asAdmin();
+
+        $this->get(route('admin.dashboard'))->assertSee(peso($before + 685));
+    }
+
+    public function test_voided_orders_do_not_count_as_sales(): void
+    {
+        $before = (float) Order::whereNotNull('paid_at')->where('status', '!=', 'voided')->sum('total');
+
+        $this->asCashier()->post(route('cashier.orders.void', 8), ['reason' => 'Duplicate order']);
+
+        $this->asAdmin()->get(route('admin.dashboard'))->assertSee(peso($before - Order::find(8)->total));
+    }
+
     public function test_sales_chart_has_fourteen_bars_with_today_highlighted(): void
     {
+        $this->withHistory();
         $html = $this->get(route('admin.dashboard'))->getContent();
 
         $this->assertMatchesRegularExpression('/aria-label="Daily sales for the last 14 days"(.*?)<\/svg>/s', $html);
@@ -33,6 +81,7 @@ class DashboardTest extends TestCase
 
     public function test_hours_chart_covers_opening_hours(): void
     {
+        $this->withHistory();
         $html = $this->get(route('admin.dashboard'))->getContent();
         preg_match('/aria-label="Average orders per hour"(.*?)<\/svg>/s', $html, $m);
 
@@ -53,6 +102,25 @@ class DashboardTest extends TestCase
     public function test_recent_activity_comes_from_the_audit_log(): void
     {
         $this->get(route('admin.dashboard'))->assertSee('Payment recorded')->assertSee('See the full audit log');
+    }
+
+    public function test_history_feeds_the_payment_mix_best_sellers_and_the_weekly_comparison(): void
+    {
+        $this->withHistory();
+
+        $this->get(route('admin.dashboard'))
+            ->assertSee('vs this time last week')
+            ->assertDontSee('No sales in the last 7 days yet.')
+            ->assertSee('Café Latte'); // the sample's most popular item
+
+        $this->assertGreaterThan(3000, Order::count(), 'about a month of orders');
+    }
+
+    public function test_only_the_owner_sees_the_dashboard(): void
+    {
+        foreach (['cashier', 'kitchen', 'stock'] as $username) {
+            $this->signIn($username)->get(route('admin.dashboard'))->assertForbidden();
+        }
     }
 
     public function test_a_quiet_week_renders_instead_of_crashing(): void

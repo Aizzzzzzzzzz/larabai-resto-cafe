@@ -3,8 +3,7 @@
 namespace App\Http\Requests\Admin;
 
 use App\Enums\Role;
-use App\Support\CurrentStaff;
-use App\Support\DemoData;
+use App\Services\Catalog;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Validator;
@@ -33,7 +32,7 @@ class UserRequest extends FormRequest
         return [
             'full_name' => ['required', 'string', 'max:100'],
             'username' => ['required', 'regex:/^[a-z0-9._]{3,20}$/', function ($attribute, $value, $fail) use ($editing) {
-                $taken = collect(DemoData::users())->contains(fn ($u) => $u['username'] === $value && $u['id'] !== ($editing['id'] ?? null));
+                $taken = collect(Catalog::users())->contains(fn ($u) => $u['username'] === $value && $u['id'] !== ($editing['id'] ?? null));
                 if ($taken) {
                     $fail("{$value} is already taken.");
                 }
@@ -72,7 +71,7 @@ class UserRequest extends FormRequest
                 return;
             }
 
-            $otherAdmins = collect(DemoData::users())->filter(fn ($u) => $u['role'] === 'admin' && $u['is_active'] && $u['id'] !== $user['id'])->count();
+            $otherAdmins = collect(Catalog::users())->filter(fn ($u) => $u['role'] === 'admin' && $u['is_active'] && $u['id'] !== $user['id'])->count();
             if ($user['role'] === 'admin' && ($role !== 'admin' || ! $active) && $otherAdmins < 1) {
                 $validator->errors()->add('role', 'Keep at least one active admin.');
             }
@@ -82,11 +81,11 @@ class UserRequest extends FormRequest
     /** The account being edited, or null when adding. */
     public function target(): ?array
     {
-        return $this->route('user') ? collect(DemoData::users())->firstWhere('id', (int) $this->route('user')) : null;
+        return $this->route('user') ? collect(Catalog::users())->firstWhere('id', (int) $this->route('user')) : null;
     }
 
     public function editingSelf(): bool
     {
-        return $this->target() !== null && $this->target()['full_name'] === CurrentStaff::get()['name'];
+        return $this->target() !== null && $this->target()['id'] === $this->user()?->id;
     }
 }

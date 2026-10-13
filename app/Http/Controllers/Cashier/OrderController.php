@@ -2,10 +2,13 @@
 
 namespace App\Http\Controllers\Cashier;
 
+use App\Exceptions\IllegalTransition;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Cashier\CancelOrderRequest;
+use App\Models\Order;
+use App\Services\Orders;
+use App\Services\OrderWorkflow;
 use App\Support\CashierActions;
-use App\Support\DemoData;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -27,8 +30,7 @@ class OrderController extends Controller
         $tab = array_key_exists($request->query('tab'), self::TABS) ? $request->query('tab') : 'awaiting';
         $q = trim((string) $request->query('q'));
 
-        // UI scaffold: today's sample orders. Phase 4 queries today's orders.
-        $orders = collect(DemoData::orders());
+        $orders = collect(Orders::today());
         $inTab = fn (string $t) => $orders->filter(fn ($o) => self::inTab($o, $t));
 
         $rows = $inTab($tab)
@@ -54,26 +56,35 @@ class OrderController extends Controller
     }
 
     /** Mark served / picked up / delivered. */
-    public function complete(string $order): RedirectResponse
+    public function complete(Request $request, OrderWorkflow $workflow, string $order): RedirectResponse
     {
-        abort_unless(CashierActions::canComplete($this->find($order)), 403);
+        $o = $this->find($order);
+        abort_unless(CashierActions::canComplete($o), 403);
 
-        return $this->demoSaved('cashier.orders.index', ['tab' => 'active']);
+        $this->attempt(fn () => $workflow->complete(Order::findOrFail($o['id']), $request->user()));
+
+        return redirect()->route('cashier.orders.index', ['tab' => 'active'])->with('status', "{$o['order_no']} marked ".strtolower(CashierActions::completeLabel($o)).'.');
     }
 
-    public function cancel(CancelOrderRequest $request, string $order): RedirectResponse
+    public function cancel(CancelOrderRequest $request, OrderWorkflow $workflow, string $order): RedirectResponse
     {
-        abort_unless(CashierActions::canCancel($this->find($order)), 403);
+        $o = $this->find($order);
+        abort_unless(CashierActions::canCancel($o), 403);
 
-        return $this->demoSaved('cashier.orders.index');
+        $this->attempt(fn () => $workflow->cancel(Order::findOrFail($o['id']), $request->input('reason'), $request->user()));
+
+        return redirect()->route('cashier.orders.index')->with('status', "{$o['order_no']} cancelled.");
     }
 
-    /** Void a paid order: the payment is marked voided and the ingredients go back to stock (Phase 4). */
-    public function void(CancelOrderRequest $request, string $order): RedirectResponse
+    /** Void a paid order: the payment is marked voided and the ingredients go back to stock. */
+    public function void(CancelOrderRequest $request, OrderWorkflow $workflow, string $order): RedirectResponse
     {
-        abort_unless(CashierActions::canVoid($this->find($order)), 403);
+        $o = $this->find($order);
+        abort_unless(CashierActions::canVoid($o), 403);
 
-        return $this->demoSaved('cashier.orders.index', ['tab' => 'active']);
+        $this->attempt(fn () => $workflow->void(Order::findOrFail($o['id']), $request->input('reason'), $request->user()));
+
+        return redirect()->route('cashier.orders.index', ['tab' => 'active'])->with('status', "{$o['order_no']} voided. The ingredients went back to stock.");
     }
 
     private static function inTab(array $o, string $tab): bool
@@ -89,6 +100,16 @@ class OrderController extends Controller
 
     private function find(string $order): array
     {
-        return DemoData::order($order) ?? abort(404);
+        return Orders::find($order) ?? abort(404);
+    }
+
+    /** Someone else may have moved the order a moment ago: that is a refusal (403), not a crash. */
+    private function attempt(callable $action): void
+    {
+        try {
+            $action();
+        } catch (IllegalTransition) {
+            abort(403);
+        }
     }
 }

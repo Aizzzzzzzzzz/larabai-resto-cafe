@@ -2,15 +2,11 @@
 
 namespace App\Services;
 
-use App\Support\DemoData;
-
 /**
  * How much of each ingredient an order line uses (document.md §3.6 "Automatic deduction"):
  * the item's recipe, plus a 12 or 16 oz cup and a lid for drinks, plus what chosen options add or
- * swap (oat milk replaces fresh milk). Pure rules on the recipes — Phase 2's StockService uses
- * them to deduct and return stock.
- *
- * UI scaffold: recipes come from DemoData; Phase 1 reads item_ingredients / choice_ingredients.
+ * swap (oat milk replaces fresh milk). Pure rules on the recipes; StockService uses them to deduct
+ * and return stock.
  */
 class StockUsage
 {
@@ -20,7 +16,7 @@ class StockUsage
      */
     public static function forLine(string $itemCode, int $qty, array $options = []): array
     {
-        $item = DemoData::item($itemCode);
+        $item = Catalog::item($itemCode);
         if (! $item) {
             return [];
         }
@@ -30,7 +26,7 @@ class StockUsage
             $use[$code] = ($use[$code] ?? 0) + $amount;
         };
 
-        foreach (DemoData::recipes()[$itemCode] ?? [] as [$ingredient, $amount]) {
+        foreach (Catalog::recipes()[$itemCode] ?? [] as [$ingredient, $amount]) {
             $add($ingredient, $amount);
         }
 
@@ -40,7 +36,7 @@ class StockUsage
             $add('lid', 1);
         }
 
-        $optionRecipes = DemoData::optionRecipes();
+        $optionRecipes = Catalog::optionRecipes()[$itemCode] ?? [];
         foreach ($options as $option) {
             $recipe = $optionRecipes[$option['group'].':'.$option['choice']] ?? null;
             if (! $recipe) {
@@ -85,7 +81,7 @@ class StockUsage
     /** Codes of the ingredients that can't cover one basic serving of the item. */
     public static function shortFor(array $item): array
     {
-        $stock = array_column(DemoData::ingredients(), 'stock_qty', 'code');
+        $stock = array_column(Catalog::ingredients(), 'stock_qty', 'code');
 
         return array_keys(array_filter(
             self::forLine($item['code'], 1),
@@ -97,10 +93,10 @@ class StockUsage
     /** Menu items whose recipe uses the ingredient. */
     public static function usedIn(string $ingredientCode): array
     {
-        $recipes = DemoData::recipes();
+        $recipes = Catalog::recipes();
 
         return array_values(array_filter(
-            DemoData::items(),
+            Catalog::menu(),
             fn ($item) => collect($recipes[$item['code']] ?? [])->contains(fn ($row) => $row[0] === $ingredientCode),
         ));
     }

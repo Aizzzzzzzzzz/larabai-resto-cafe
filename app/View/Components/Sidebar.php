@@ -3,8 +3,9 @@
 namespace App\View\Components;
 
 use App\Enums\Role;
+use App\Models\Order;
+use App\Services\Catalog;
 use App\Support\CurrentStaff;
-use App\Support\DemoData;
 use App\Support\StockLevel;
 use Illuminate\View\Component;
 use Illuminate\View\View;
@@ -12,8 +13,7 @@ use Illuminate\View\View;
 /**
  * Staff sidebar — the mockup's NAV list, filtered by the viewer's role (admin sees its own group first).
  *
- * UI scaffold: the viewer comes from the demo login (session 'demo_staff'), defaulting to the owner.
- * Phase 0 replaces this with auth()->user(). Hiding links is only convenience — routes are
+ * Hiding links is only convenience — routes are
  * protected by middleware and policies, never by this list.
  */
 class Sidebar extends Component
@@ -61,13 +61,12 @@ class Sidebar extends Component
 
     /**
      * Orders waiting for payment, and ingredients that are low or out.
-     * UI scaffold: counted from DemoData; Phase 4 / 6 count from the database.
      */
     public static function liveBadges(): array
     {
         return [
-            'awaiting' => collect(DemoData::orders())->filter(fn ($o) => ! $o['paid_at'] && ! in_array($o['status'], ['cancelled', 'voided'], true))->count(),
-            'lowstock' => collect(DemoData::ingredients())->filter(fn ($i) => StockLevel::of($i) !== StockLevel::OK)->count(),
+            'awaiting' => Order::whereNull('paid_at')->whereNotIn('status', ['cancelled', 'voided'])->count(),
+            'lowstock' => collect(Catalog::ingredients())->filter(fn ($i) => StockLevel::of($i) !== StockLevel::OK)->count(),
         ];
     }
 

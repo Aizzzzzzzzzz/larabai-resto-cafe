@@ -7,12 +7,19 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
 /**
- * Shell checks left from the UI scaffold (ui-scaffold-checklist.md): the shared-components gallery,
+ * Shell checks left from the UI scaffold (ui-scaffold-checklist.md): the shared-components gallery (owner only),
  * signed QR links and the mockup's layout classes. Every module has its own feature tests
  * (tests/Feature/Customer, Cashier, Kitchen, Inventory, Admin, Public).
  */
 class ScaffoldRoutesTest extends TestCase
 {
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->asAdmin();
+    }
+
     public static function screens(): array
     {
         return [

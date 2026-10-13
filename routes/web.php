@@ -13,14 +13,14 @@ use Illuminate\Support\Facades\Route;
 | Brew & Bite Café — routes, one group per module (development-plan.md §4).
 | Every write is a plain HTML form (POST + @csrf, PATCH/PUT/DELETE via @method).
 |
-| UI scaffold: no auth yet. Phase 0 adds `auth` + `role:` middleware to the staff groups
-| (cashier → cashier + admin, kitchen → kitchen + admin, inventory → inventory + admin, admin → admin).
+| Staff groups sit behind `auth` + `role:` — cashier → cashier + admin, kitchen → kitchen + admin,
+| inventory → inventory + admin, admin → admin only. The owner/admin can open every module.
 */
 
 // ---- Public ----
 Route::get('/', [Public\HomeController::class, 'index'])->name('home');
 Route::get('/navigator', [Public\NavigatorController::class, 'index'])->name('navigator');
-Route::get('/navigator/components', [Public\ComponentGalleryController::class, 'staff'])->name('navigator.components.staff');
+Route::get('/navigator/components', [Public\ComponentGalleryController::class, 'staff'])->middleware(['auth', 'role:admin'])->name('navigator.components.staff');
 Route::get('/navigator/components/customer', [Public\ComponentGalleryController::class, 'customer'])->name('navigator.components.customer');
 
 // ---- Staff login ----
@@ -61,7 +61,7 @@ Route::prefix('order')->name('customer.')->group(function () {
 });
 
 // ---- Cashier ----
-Route::prefix('cashier')->name('cashier.')->group(function () {
+Route::prefix('cashier')->name('cashier.')->middleware(['auth', 'role:cashier'])->group(function () {
     Route::get('/pos', [Cashier\PosController::class, 'index'])->name('pos.index');
     Route::post('/pos', [Cashier\PosController::class, 'store'])->name('pos.store');
 
@@ -77,7 +77,7 @@ Route::prefix('cashier')->name('cashier.')->group(function () {
 });
 
 // ---- Kitchen ----
-Route::prefix('kitchen')->name('kitchen.')->group(function () {
+Route::prefix('kitchen')->name('kitchen.')->middleware(['auth', 'role:kitchen'])->group(function () {
     Route::get('/', [Kitchen\DisplayController::class, 'index'])->name('display');
     Route::get('/board', [Kitchen\DisplayController::class, 'board'])->name('board');
     Route::patch('/orders/{order}/status', [Kitchen\OrderStatusController::class, 'update'])->name('orders.status');
@@ -85,7 +85,7 @@ Route::prefix('kitchen')->name('kitchen.')->group(function () {
 });
 
 // ---- Inventory ----
-Route::prefix('inventory')->name('inventory.')->group(function () {
+Route::prefix('inventory')->name('inventory.')->middleware(['auth', 'role:inventory'])->group(function () {
     Route::get('/ingredients', [Inventory\IngredientController::class, 'index'])->name('ingredients.index');
     Route::post('/ingredients', [Inventory\IngredientController::class, 'store'])->name('ingredients.store');
     Route::put('/ingredients/{ingredient}', [Inventory\IngredientController::class, 'update'])->name('ingredients.update');
@@ -94,7 +94,7 @@ Route::prefix('inventory')->name('inventory.')->group(function () {
 });
 
 // ---- Admin ----
-Route::prefix('admin')->name('admin.')->group(function () {
+Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin'])->group(function () {
     Route::get('/', [Admin\DashboardController::class, 'index'])->name('dashboard');
 
     Route::resource('menu-items', Admin\MenuItemController::class)->only(['index', 'store', 'update', 'destroy'])->parameters(['menu-items' => 'menuItem']);
