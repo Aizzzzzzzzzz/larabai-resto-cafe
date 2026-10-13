@@ -25,7 +25,7 @@ Route::get('/navigator/components/customer', [Public\ComponentGalleryController:
 
 // ---- Staff login ----
 Route::get('/login', [LoginController::class, 'create'])->name('login');
-Route::post('/login', [LoginController::class, 'store'])->name('login.store');
+Route::post('/login', [LoginController::class, 'store'])->middleware('throttle:10,1')->name('login.store'); // 10 tries a minute per address
 Route::post('/logout', [LoginController::class, 'destroy'])->name('logout');
 
 // ---- Customer: QR codes (signed links, so the table number can't be edited) ----

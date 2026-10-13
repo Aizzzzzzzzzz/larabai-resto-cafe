@@ -38,6 +38,11 @@
 > **2026-10-13 — Scaffold Step 6 done:** admin module. *(actual: users `password` / `active` routes merged into
 > `users.update`; `admin.menu-items.availability` added; `chillerlan/php-qrcode` added for the QR sheet;
 > dashboard sample data is `DemoSales` (generated) and `DemoAudit`; app timezone `Asia/Manila`.)*
+>
+> **2026-10-13 — Scaffold Step 7 done:** homepage, navigator, staff login. *(actual: login works against
+> DemoData in the session, with a throttle and a safe `next` check; counts on the homepage come from the
+> data. Phase 0 still owes: users table + hashed passwords, `Auth::attempt`, `auth` + `role:` middleware,
+> policies, "last login", and the Logged in / Failed login audit entries.)*
 
 ---
 

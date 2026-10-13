@@ -134,8 +134,21 @@ No database, no auth. Plan and route map: `development-plan.md` §0, §4.
 > zero JavaScript errors. The dashboard's "▼ 85% vs last week" is expected: today has 13 sample orders against a generated full day.
 
 ## Step 7 — Auxiliary pages
-- [ ] Homepage (`home.html`), System navigator (`index.html`) with signed table/counter QR links
-- [ ] Staff login (shift board + form + demo accounts); demo login picks the role shown in the sidebar; logout
+- [x] Homepage (`home.html`): hero, "What's in the glass" (first cup server-drawn, tabs switch the other two — arrow keys too; prices from the menu),
+      story, favourites (best sellers + new items that can be ordered), how to order, visit, map. *(actual: the mockup's "14 tables · 44 seats ·
+      60+ items" now read from the data — 5 tables, 18 seats, 27 items — to agree with document.md §1)*
+- [x] System navigator (`index.html`, demo mode only): live counts, walkthrough with demo logins, floor plan (`App\Support\FloorPlan`) where each
+      table opens its **signed** QR link (open-order counts per table), screens by role with demo logins and badges, reset link
+- [x] Staff login (`login.html`): shift board, form posting with `@csrf`, demo accounts that fill the form (demo mode only), "Log in to open <screen>"
+      context, "continue / switch user" when already in, show/hide password; `LoginRequest`, throttled to 10 tries a minute
+- [x] Role landing + safe `next`: `App\Support\StaffScreens` accepts a return address only if it's a path that resolves to a staff screen (no full URLs,
+      `//host`, backslashes, `javascript:`); `CurrentStaff` now logs in/out (session id regenerated); sidebar follows the logged-in role
+- [x] Logout redirects to the login page with "You’re logged out." *(it showed the "nothing is saved" toast before)*
+
+> Verified 2026-10-13: 180 tests pass (`tests/Feature/Public/*`); 27 headless-Edge checks (glass tabs, floor-plan tile = scan, show/hide password, demo
+> account fill, wrong-password markup, login → next screen, logout, switch user), zero JavaScript errors.
+> **Known gap until Phase 0:** nothing blocks a screen by role yet — a cashier can open `/admin/audit-logs` by address. The login only decides where you
+> land and what the sidebar shows; `auth` + `role:` middleware and policies come in Phase 0.
 
 ## Step 8 — Polish
 - [ ] Every mockup screen reachable from navigation; every transition has a control with a handler

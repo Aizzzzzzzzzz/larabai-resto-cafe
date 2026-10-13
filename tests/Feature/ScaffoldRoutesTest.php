@@ -2,34 +2,22 @@
 
 namespace Tests\Feature;
 
-use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\URL;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
 /**
- * UI scaffold check (ui-scaffold-checklist.md): every screen opens, every form route answers
- * with the "nothing is saved" toast. Replaced module by module by real feature tests
- * (tests/Feature/Customer, Cashier, Kitchen, Inventory, Admin).
+ * Shell checks left from the UI scaffold (ui-scaffold-checklist.md): the shared-components gallery,
+ * signed QR links and the mockup's layout classes. Every module has its own feature tests
+ * (tests/Feature/Customer, Cashier, Kitchen, Inventory, Admin, Public).
  */
 class ScaffoldRoutesTest extends TestCase
 {
     public static function screens(): array
     {
         return [
-            'home' => ['home'],
-            'navigator' => ['navigator'],
             'components (staff)' => ['navigator.components.staff'],
             'components (customer)' => ['navigator.components.customer'],
-            'login' => ['login'],
-        ];
-    }
-
-    public static function writes(): array
-    {
-        return [
-            'login' => ['post', 'login.store'],
-            'logout' => ['post', 'logout'],
         ];
     }
 
@@ -37,14 +25,6 @@ class ScaffoldRoutesTest extends TestCase
     public function test_screen_opens(string $route, array $parameters = []): void
     {
         $this->get(route($route, $parameters))->assertOk();
-    }
-
-    #[DataProvider('writes')]
-    public function test_form_route_answers_without_saving(string $method, string $route, array $parameters = []): void
-    {
-        $this->{$method}(route($route, $parameters))
-            ->assertRedirect()
-            ->assertSessionHas('status', Controller::DEMO_MESSAGE);
     }
 
     public function test_table_qr_starts_a_dine_in_session(): void

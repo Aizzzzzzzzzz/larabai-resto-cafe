@@ -13,6 +13,7 @@ import { initCashier } from './modules/cashier';
 import { initKitchen } from './modules/kitchen';
 import { initInventory } from './modules/inventory';
 import { initAdmin } from './modules/admin';
+import { initPublic } from './modules/public';
 
 initTheme();
 initToast();
@@ -25,3 +26,4 @@ initCashier();
 initKitchen();
 initInventory();
 initAdmin();
+initPublic();
