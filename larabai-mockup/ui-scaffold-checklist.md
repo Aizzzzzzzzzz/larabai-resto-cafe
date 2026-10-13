@@ -112,11 +112,26 @@ No database, no auth. Plan and route map: `development-plan.md` §0, §4.
 > Note: MySQL was not running on the test day, so the browser run used `SESSION_DRIVER=file` for the throwaway server only.
 
 ## Step 6 — Admin module (`admin.html`)
-- [ ] Dashboard: KPI cards vs last week, 14-day sales chart, payment mix, orders by hour, best sellers, recent activity, needs attention
-- [ ] Menu & prices: item list, item editor (option groups + ingredients per serving, dynamic rows) → POST / PUT / DELETE; categories
-- [ ] Users & roles: list, add / edit, change password, deactivate, role permissions table
-- [ ] Audit logs: filters (period, module, user), search, CSV export link
-- [ ] Reset demo data: preview + type-to-confirm; printable table QR sheet
+- [x] Dashboard: KPI cards vs the same time last week, 14-day sales chart (today highlighted), payment mix (30 days / today), orders by
+      hour, best sellers, recent activity, needs-attention list linking to each screen. Charts are server-rendered SVG components
+      (`<x-bar-chart>`, `<x-share-bar>`, native tooltips) — no chart JavaScript. Sample sales: `App\Support\DemoSales` (30 generated days, seeded per day)
+- [x] Menu & prices: category tabs + search (GET), availability select per row (auto / always / sold out, submits on change), one
+      add/edit item modal (POST ↔ PUT via `data-method`) with dynamic ingredient rows, options template (new items), Large price
+      only for items with a size, cup/lid note, Remove (tap twice); Categories modal with a small form per rename / delete.
+      Validated by `MenuItemRequest` / `CategoryRequest` (no duplicates, ≥1 ingredient, a category with items can't be deleted)
+- [x] Users & roles: list, role permission matrix with active counts, one add/edit modal (name, username, role, password, can log in);
+      *(actual: the separate password / active routes from plan §4 were merged into `users.update` — the mockup edits them in one form)*;
+      rules in `UserRequest`: username format + unique, password ≥ 6, can't change/disable yourself, keep one active admin
+- [x] Audit logs: period / area / user filters + search (selects submit on change), "Show more", Export CSV of the current filters
+      (UTF-8 BOM for Excel, formula-neutralised cells); `App\Support\AuditArea`, sample log `App\Support\DemoAudit`
+- [x] Reset demo data (demo mode only): preview of what's erased + type-to-confirm RESET, re-checked on the server
+- [x] Printable table QR sheet *(actual: real QR codes via `chillerlan/php-qrcode` — new dependency — on signed links; `App\Services\QrCodes`)*
+- [x] `admin.menu-items.availability` route added *(actual: not in plan §4)*; missing records now 404 before validation on every edit request
+- [x] App timezone set to `Asia/Manila` *(actual: found while testing — times and "Good afternoon" were 8 hours behind)*
+
+> Verified 2026-10-13: 148 tests pass (`tests/Feature/Admin/*`); 47 headless-Edge checks over DevTools (chart bars, item editor rows and
+> POST/PUT switching, failed-save reopen, availability submit, own-account lock in the user modal, filter submit, QR codes painted),
+> zero JavaScript errors. The dashboard's "▼ 85% vs last week" is expected: today has 13 sample orders against a generated full day.
 
 ## Step 7 — Auxiliary pages
 - [ ] Homepage (`home.html`), System navigator (`index.html`) with signed table/counter QR links

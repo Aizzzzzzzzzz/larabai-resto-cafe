@@ -11,8 +11,22 @@
      data-submit  → the label of [data-modal-submit]
      data-fill    → JSON { fieldName: value } put into the form's fields (inputs, selects, radio groups);
                     the form then fires a bubbling "modal:filled" event for screens that preview values
+     data-method  → "PUT" / "POST": sets the form's hidden _method (modal made with <x-modal spoof>)
    The action is also kept in a hidden _action field, so a modal re-opened after a failed
    validation still posts to the same row. */
+/* Puts one value into the form field(s) called `name`: text/number/select inputs, a radio group (selects the
+   matching radio), or a checkbox — alone or after a hidden "0" input of the same name — which is
+   checked when the value is truthy. Names the form doesn't have are ignored. */
+function fillField(form, name, value) {
+    const found = form.elements[name];
+    if (!found) return;
+    const fields = found.tagName ? [found] : [...found]; // a RadioNodeList has no tagName
+    const checkbox = fields.find((f) => f.type === 'checkbox');
+    if (checkbox) { checkbox.checked = value === true || value === 1 || value === '1'; return; }
+    if (fields.some((f) => f.type === 'radio')) { found.value = value; return; }
+    fields[fields.length - 1].value = value;
+}
+
 export function openModal(id, opener = null) {
     const back = document.getElementById(id);
     if (!back) return;
@@ -28,11 +42,15 @@ export function openModal(id, opener = null) {
         set('h2', opener.dataset.title);
         set('[data-modal-text]', opener.dataset.text);
         set('[data-modal-submit]', opener.dataset.submit);
+        if (form && opener.dataset.method) {
+            const spoof = form.querySelector('input[name="_method"]');
+            if (spoof) spoof.value = opener.dataset.method; // add (POST) and edit (PUT) can share one modal
+        }
         if (form && opener.dataset.fill) {
-            Object.entries(JSON.parse(opener.dataset.fill)).forEach(([name, value]) => {
-                if (form.elements[name]) form.elements[name].value = value; // RadioNodeList selects the matching radio
-            });
-            form.dispatchEvent(new CustomEvent('modal:filled', { bubbles: true }));
+            const data = JSON.parse(opener.dataset.fill);
+            Object.entries(data).forEach(([name, value]) => fillField(form, name, value));
+            // detail carries the whole JSON, for values that aren't a single field (e.g. a list of rows)
+            form.dispatchEvent(new CustomEvent('modal:filled', { bubbles: true, detail: data }));
         }
     }
 

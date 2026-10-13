@@ -11,3 +11,22 @@ body:not(.m-staff):not(.m-customer) .toast-pop { position: fixed; left: 50%; bot
 .scaffold-note b { color: var(--ink); font-family: var(--display); font-size: 1.1rem; }
 .scaffold-note code { font: 500 .8rem var(--mono); }
 .scaffold-note form { display: flex; justify-content: center; }
+
+/* Printable QR sheet (admin/table-qr): cards of two columns on screen, a grid on paper */
+.v-admin-table-qr .qr-sheet { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 16px; }
+.v-admin-table-qr .qr-card { margin: 0; background: #fff; color: #1B211D; border: 1px solid var(--line); border-radius: var(--radius); padding: 18px; display: grid; gap: 8px; justify-items: center; text-align: center; break-inside: avoid; }
+.v-admin-table-qr .qr-card figcaption { display: grid; gap: 2px; }
+.v-admin-table-qr .qr-card figcaption b { font: 800 1.5rem var(--display); }
+.v-admin-table-qr .qr-card figcaption small, .v-admin-table-qr .qr-card p { color: #5B655E; font-size: .85rem; margin: 0; }
+.v-admin-table-qr .qr-code { width: 100%; max-width: 200px; }
+.v-admin-table-qr .qr-code svg { display: block; width: 100%; height: auto; }
+.v-admin-table-qr .qr-code path.dark, .v-admin-table-qr .qr-code .qr-darkmodule { fill: #1B211D; }
+.v-admin-table-qr .qr-url { color: #8A938D; font: .66rem var(--mono); word-break: break-all; }
+@media print {
+.v-admin-table-qr .qr-sheet { grid-template-columns: repeat(2, 1fr); }
+.v-admin-table-qr .qr-card { border: 1px dashed #999; }
+}
+
+/* Reset demo data (admin/demo-reset) */
+.v-admin-demo-reset .reset-panel { max-width: 560px; }
+.v-admin-demo-reset .reset-list { margin: 0; padding-left: 1.2rem; display: grid; gap: 4px; }

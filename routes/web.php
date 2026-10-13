@@ -97,12 +97,11 @@ Route::prefix('inventory')->name('inventory.')->group(function () {
 Route::prefix('admin')->name('admin.')->group(function () {
     Route::get('/', [Admin\DashboardController::class, 'index'])->name('dashboard');
 
-    Route::resource('menu-items', Admin\MenuItemController::class)->only(['index', 'store', 'update', 'destroy']);
+    Route::resource('menu-items', Admin\MenuItemController::class)->only(['index', 'store', 'update', 'destroy'])->parameters(['menu-items' => 'menuItem']);
+    Route::patch('/menu-items/{menuItem}/availability', [Admin\MenuItemController::class, 'availability'])->name('menu-items.availability');
     Route::resource('categories', Admin\CategoryController::class)->only(['store', 'update', 'destroy']);
 
     Route::resource('users', Admin\UserController::class)->only(['index', 'store', 'update']);
-    Route::patch('/users/{user}/password', [Admin\UserController::class, 'password'])->name('users.password');
-    Route::patch('/users/{user}/active', [Admin\UserController::class, 'active'])->name('users.active');
 
     Route::get('/audit-logs', [Admin\AuditLogController::class, 'index'])->name('audit-logs.index');
     Route::get('/audit-logs/export', [Admin\AuditLogController::class, 'export'])->name('audit-logs.export');

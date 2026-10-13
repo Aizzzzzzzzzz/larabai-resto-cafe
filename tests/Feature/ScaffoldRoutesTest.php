@@ -10,7 +10,7 @@ use Tests\TestCase;
 /**
  * UI scaffold check (ui-scaffold-checklist.md): every screen opens, every form route answers
  * with the "nothing is saved" toast. Replaced module by module by real feature tests
- * (tests/Feature/Customer, Cashier, Kitchen, Inventory).
+ * (tests/Feature/Customer, Cashier, Kitchen, Inventory, Admin).
  */
 class ScaffoldRoutesTest extends TestCase
 {
@@ -22,13 +22,6 @@ class ScaffoldRoutesTest extends TestCase
             'components (staff)' => ['navigator.components.staff'],
             'components (customer)' => ['navigator.components.customer'],
             'login' => ['login'],
-            'admin dashboard' => ['admin.dashboard'],
-            'admin menu' => ['admin.menu-items.index'],
-            'admin users' => ['admin.users.index'],
-            'admin audit logs' => ['admin.audit-logs.index'],
-            'admin audit export' => ['admin.audit-logs.export'],
-            'admin demo reset' => ['admin.demo-reset.show'],
-            'admin table qr' => ['admin.tables.qr'],
         ];
     }
 
@@ -37,17 +30,6 @@ class ScaffoldRoutesTest extends TestCase
         return [
             'login' => ['post', 'login.store'],
             'logout' => ['post', 'logout'],
-            'menu item add' => ['post', 'admin.menu-items.store'],
-            'menu item edit' => ['put', 'admin.menu-items.update', ['menu_item' => 'latte']],
-            'menu item remove' => ['delete', 'admin.menu-items.destroy', ['menu_item' => 'latte']],
-            'category add' => ['post', 'admin.categories.store'],
-            'category edit' => ['put', 'admin.categories.update', ['category' => 'coffee']],
-            'category remove' => ['delete', 'admin.categories.destroy', ['category' => 'coffee']],
-            'user add' => ['post', 'admin.users.store'],
-            'user edit' => ['put', 'admin.users.update', ['user' => 1]],
-            'user password' => ['patch', 'admin.users.password', ['user' => 1]],
-            'user deactivate' => ['patch', 'admin.users.active', ['user' => 1]],
-            'demo reset' => ['post', 'admin.demo-reset.store'],
         ];
     }
 

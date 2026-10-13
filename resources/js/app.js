@@ -12,6 +12,7 @@ import { initCustomer } from './modules/customer';
 import { initCashier } from './modules/cashier';
 import { initKitchen } from './modules/kitchen';
 import { initInventory } from './modules/inventory';
+import { initAdmin } from './modules/admin';
 
 initTheme();
 initToast();
@@ -23,3 +24,4 @@ initCustomer();
 initCashier();
 initKitchen();
 initInventory();
+initAdmin();

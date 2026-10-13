@@ -85,6 +85,7 @@ class InventoryTest extends TestCase
         $this->post($url, ['mode' => 'count'])->assertSessionHasErrors(['qty' => 'Enter the counted amount (0 if there is none).']);
         $this->post($url, ['mode' => 'swap', 'qty' => 5])->assertSessionHasErrors('mode');
         $this->post(route('inventory.ingredients.restock', 'nope'), ['mode' => 'add', 'qty' => 5])->assertNotFound();
+        $this->post(route('inventory.ingredients.restock', 'nope'), [])->assertNotFound(); // missing beats invalid
     }
 
     public function test_a_count_of_zero_is_allowed_and_a_matching_count_changes_nothing(): void

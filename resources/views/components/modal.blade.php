@@ -1,4 +1,4 @@
-@props(['id', 'title', 'action', 'method' => 'POST', 'wide' => false, 'submit' => 'Save', 'danger' => false])
+@props(['id', 'title', 'action', 'method' => 'POST', 'spoof' => false, 'wide' => false, 'submit' => 'Save', 'danger' => false])
 
 {{--
     Staff modal holding one real form (mockup .modal-back > form.modal).
@@ -17,9 +17,10 @@
 <div class="modal-back" id="{{ $id }}" hidden @if ($reopen) data-modal-autoopen @endif>
     <form {{ $attributes->class(['modal', 'wide' => $wide]) }} method="POST" action="{{ $formAction }}" role="dialog" aria-modal="true" aria-labelledby="{{ $id }}-title" novalidate>
         @csrf
-        @unless (strtoupper($method) === 'POST')
-            @method($method)
-        @endunless
+        {{-- Method spoofing; a shared add/edit modal passes spoof so its opener can switch POST ↔ PUT (core/modal.js data-method) --}}
+        @if ($spoof || strtoupper($method) !== 'POST')
+            <input type="hidden" name="_method" value="{{ $reopen ? old('_method', $method) : $method }}">
+        @endif
         <input type="hidden" name="_modal" value="{{ $id }}">
         <input type="hidden" name="_action" value="{{ $formAction }}">
         <div class="modal-head">

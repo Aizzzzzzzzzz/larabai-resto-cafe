@@ -13,6 +13,11 @@ use Illuminate\Validation\Rule;
  */
 class IngredientRequest extends FormRequest
 {
+    protected function prepareForValidation(): void
+    {
+        abort_if($this->route('ingredient') && ! DemoData::ingredient($this->route('ingredient')), 404);
+    }
+
     public function rules(): array
     {
         $editing = $this->route('ingredient');

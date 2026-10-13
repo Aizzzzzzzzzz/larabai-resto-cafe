@@ -34,6 +34,10 @@
 > **2026-10-13 — Scaffold Step 5 done:** inventory module. *(actual: `StockUsage` built now instead of
 > Phase 2; stock history is its own page; `DemoMovements` is scaffold-only sample data. Phase 6 still
 > owes: real `stock_movements`, restock/count writes, ingredient CRUD, and the audit entries.)*
+>
+> **2026-10-13 — Scaffold Step 6 done:** admin module. *(actual: users `password` / `active` routes merged into
+> `users.update`; `admin.menu-items.availability` added; `chillerlan/php-qrcode` added for the QR sheet;
+> dashboard sample data is `DemoSales` (generated) and `DemoAudit`; app timezone `Asia/Manila`.)*
 
 ---
 
@@ -288,7 +292,7 @@ All staff routes sit behind `auth` + `role:` middleware **and** a policy check.
 | `inventory` · history | GET `/inventory/ingredients/{ingredient}/history` | `Inventory\MovementController@index` → `inventory/history` |
 | `admin` · dashboard | GET `/admin` · `admin.dashboard` | `Admin\DashboardController@index` → `admin/dashboard` |
 | `admin` · menu & prices | resource `/admin/menu-items` (index, store, update, destroy) · resource `/admin/categories` (store, update, destroy) | `Admin\MenuItemController`, `Admin\CategoryController` → `admin/menu` *(actual: no separate `/admin/menu` route or `menu-item-form` view — the item editor and categories are modals on the list, as in the mockup)* |
-| `admin` · users & roles | resource `/admin/users` (index, store, update — add/edit is a modal) · PATCH `…/{user}/password` · PATCH `…/{user}/active` | `Admin\UserController` → `admin/users` |
+| `admin` · users & roles | resource `/admin/users` (index, store, update — add/edit is a modal; password and "can log in" are fields of it) *(actual: the separate password / active routes were dropped)* | `Admin\UserController` → `admin/users` |
 | `admin` · audit logs | GET `/admin/audit-logs` · GET `/admin/audit-logs/export` (CSV) | `Admin\AuditLogController@index/export` → `admin/audit-logs` |
 | `admin` · reset demo data | GET `/admin/demo-reset` (preview) · POST `/admin/demo-reset` | `Admin\DemoResetController@show/store` |
 | *(new)* printable QR standees | GET `/admin/tables/qr` | `Admin\TableQrController@index` → `admin/table-qr` |

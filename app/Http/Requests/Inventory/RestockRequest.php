@@ -11,6 +11,11 @@ use Illuminate\Validation\Rule;
  */
 class RestockRequest extends FormRequest
 {
+    protected function prepareForValidation(): void
+    {
+        abort_unless(\App\Support\DemoData::ingredient((string) $this->route('ingredient')), 404);
+    }
+
     public function rules(): array
     {
         return [
