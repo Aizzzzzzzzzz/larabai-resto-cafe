@@ -29,7 +29,8 @@ return new class extends Migration
             $table->string('name', 100)->unique();
             $table->string('description')->nullable();
             $table->decimal('price', 8, 2);
-            $table->json('tone'); // the two colours of the item's artwork
+            $table->json('tone'); // the two colours of the item's artwork (shown when there is no photo)
+            $table->string('image_path')->nullable(); // photo on the public disk, e.g. menu/abc.webp
             $table->boolean('is_best_seller')->default(false);
             $table->boolean('is_new')->default(false);
             $table->boolean('sold_out_override')->nullable(); // null = follow stock, true = sold out, false = always available

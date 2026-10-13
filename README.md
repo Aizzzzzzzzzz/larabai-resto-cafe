@@ -106,6 +106,7 @@ larabai-mockup/                  the static mockup, the project document and the
 The project follows [`larabai-mockup/development-playbook.md`](larabai-mockup/development-playbook.md):
 spec → mockup → **UI scaffold (done)** → real build.
 
+- Order flow guide: [`larabai-mockup/order-flow-guide.md`](larabai-mockup/order-flow-guide.md) — one order from QR scan to dashboard: statuses, tables written at each step, stock, audit
 - Plan: [`larabai-mockup/development-plan.md`](larabai-mockup/development-plan.md) — data model, order state table, route map, build phases
 - Scaffold checklist: [`larabai-mockup/ui-scaffold-checklist.md`](larabai-mockup/ui-scaffold-checklist.md)
 - Project document: [`larabai-mockup/document.md`](larabai-mockup/document.md)

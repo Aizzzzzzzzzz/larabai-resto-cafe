@@ -9,6 +9,7 @@ use App\Models\MenuItem;
 use App\Services\AuditLogger;
 use App\Services\Catalog;
 use App\Services\MenuBuilder;
+use App\Services\MenuImages;
 use App\Support\Format;
 use App\Support\OptionTemplates;
 use App\Support\StockLevel;
@@ -79,7 +80,7 @@ class MenuItemController extends Controller
     }
 
     /** Creates the item with its option groups (from the template) and its ingredients per serving. */
-    public function store(MenuItemRequest $request, MenuBuilder $menu): RedirectResponse
+    public function store(MenuItemRequest $request, MenuBuilder $menu, MenuImages $images): RedirectResponse
     {
         $groups = OptionTemplates::all()[$request->input('template')]['groups'];
 
@@ -100,6 +101,7 @@ class MenuItemController extends Controller
             'tone' => self::TONES[$request->input('category')] ?? ['#6E5240', '#D8C3AE'],
             'is_best_seller' => $request->boolean('is_best_seller'),
             'is_new' => $request->boolean('is_new'),
+            'image_path' => $request->hasFile('image') ? $images->store($request->file('image')) : null,
         ], $groups, $request->recipe());
 
         AuditLogger::record('Added menu item', "{$item->name} · ".Format::peso($item->price), $request->user());
@@ -107,10 +109,14 @@ class MenuItemController extends Controller
         return redirect()->route('admin.menu-items.index', ['cat' => $request->input('category')])->with('status', "Added {$item->name} to the menu.");
     }
 
-    public function update(MenuItemRequest $request, MenuBuilder $menu, string $menuItem): RedirectResponse
+    public function update(MenuItemRequest $request, MenuBuilder $menu, MenuImages $images, string $menuItem): RedirectResponse
     {
         $item = $this->find($menuItem);
         $before = $item->only(['name', 'price']);
+        $oldImage = $item->image_path;
+
+        // A new file replaces the photo; the "remove" box takes it away; otherwise it stays
+        $photo = ['image_path' => $request->hasFile('image') ? $images->store($request->file('image')) : ($request->boolean('remove_image') ? null : $oldImage)];
 
         $menu->update($item, [
             'category' => $request->input('category'),
@@ -119,12 +125,19 @@ class MenuItemController extends Controller
             'price' => $request->input('price'),
             'is_best_seller' => $request->boolean('is_best_seller'),
             'is_new' => $request->boolean('is_new'),
-        ], $request->input('large') === null ? null : (float) $request->input('large'), $request->recipe());
+        ] + $photo, $request->input('large') === null ? null : (float) $request->input('large'), $request->recipe());
+
+        if ($photo['image_path'] !== $oldImage) {
+            $images->delete($oldImage);
+        }
 
         $item->refresh();
         $detail = $item->name;
         if ((float) $before['price'] !== $item->price) {
             $detail .= ' · price '.Format::peso($before['price']).' → '.Format::peso($item->price);
+        }
+        if ($photo['image_path'] !== $oldImage) {
+            $detail .= $photo['image_path'] ? ' · photo changed' : ' · photo removed';
         }
         if ($before['name'] !== $item->name) {
             $detail = "{$before['name']} → {$detail}";
@@ -138,7 +151,7 @@ class MenuItemController extends Controller
      * Takes an item off the menu. One that was never ordered is deleted outright; one with sales is only
      * switched off, so past orders and receipts keep its name and price.
      */
-    public function destroy(Request $request, string $menuItem): RedirectResponse
+    public function destroy(Request $request, MenuImages $images, string $menuItem): RedirectResponse
     {
         $item = $this->find($menuItem);
 
@@ -146,6 +159,7 @@ class MenuItemController extends Controller
             $item->update(['is_active' => false]);
         } else {
             $item->delete();
+            $images->delete($item->image_path); // nothing refers to it any more
         }
         AuditLogger::record('Removed menu item', $item->name, $request->user());
 

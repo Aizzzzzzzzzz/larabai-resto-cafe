@@ -50,7 +50,11 @@
                         <tr>
                             <td>
                                 <div class="item-cell">
-                                    <span class="sw" style="background:linear-gradient(135deg, {{ $item['tone'][0] }}, {{ $item['tone'][1] }})"></span>
+                                    @if ($item['image_url'])
+                                        <img class="sw" src="{{ $item['image_url'] }}" alt="" loading="lazy">
+                                    @else
+                                        <span class="sw" style="background:linear-gradient(135deg, {{ $item['tone'][0] }}, {{ $item['tone'][1] }})"></span>
+                                    @endif
                                     <span><b>{{ $item['name'] }}</b>
                                         @if ($item['is_best_seller']) <span class="chip chip-gold">Best seller</span>@endif
                                         @if ($item['is_new']) <span class="chip chip-green">New</span>@endif
@@ -86,7 +90,7 @@
                                         data-fill="{{ json_encode([
                                             'mode' => 'edit', 'has_size' => $item['large_adds'] !== null ? 1 : 0, 'name' => $item['name'], 'category' => $item['category'],
                                             'price' => $item['price'], 'description' => $item['description'], 'large' => $item['large_adds'] ?? 20,
-                                            'is_best_seller' => (int) $item['is_best_seller'], 'is_new' => (int) $item['is_new'], 'ingredients' => $item['recipe'],
+                                            'is_best_seller' => (int) $item['is_best_seller'], 'is_new' => (int) $item['is_new'], 'ingredients' => $item['recipe'], 'image_url' => $item['image_url'],
                                         ]) }}">Edit</button>
                             </td>
                         </tr>
@@ -101,7 +105,7 @@
 
 @push('modals')
     {{-- Item editor: one modal for adding and editing. Its opener fills it and picks POST or PUT. --}}
-    <x-modal id="itemModal" :title="$reopenItem ? ($mode === 'edit' ? 'Edit menu item' : 'Add menu item') : 'Add menu item'" :action="route('admin.menu-items.store')" spoof wide data-item-form>
+    <x-modal id="itemModal" :title="$reopenItem ? ($mode === 'edit' ? 'Edit menu item' : 'Add menu item') : 'Add menu item'" :action="route('admin.menu-items.store')" spoof wide files data-item-form>
         <input type="hidden" name="mode" value="{{ $mode }}">
         <input type="hidden" name="has_size" value="{{ $typed('has_size', 1) }}">
         <div class="form-grid">
@@ -123,6 +127,16 @@
                     @endforeach
                 </select>
             </label>
+            <div class="full photo-field">
+                <div class="lbl" style="margin-bottom:6px">Photo <span class="hint">Optional · JPG, PNG or WebP, up to 3 MB. Without one, the drawn glass or plate is shown.</span></div>
+                <div class="photo-row">
+                    <span class="photo-preview" data-photo-box hidden><img alt="Current photo" data-photo-preview></span>
+                    <div class="photo-inputs">
+                        <input class="input" type="file" name="image" accept="image/jpeg,image/png,image/webp" aria-label="Photo of the item" data-photo-input>
+                        <label class="check" data-photo-remove hidden><input type="hidden" name="remove_image" value="0"><input type="checkbox" name="remove_image" value="1"> Remove the current photo</label>
+                    </div>
+                </div>
+            </div>
             <div class="full">
                 <div class="lbl" style="margin-bottom:6px">Labels on the menu</div>
                 <div class="checks">

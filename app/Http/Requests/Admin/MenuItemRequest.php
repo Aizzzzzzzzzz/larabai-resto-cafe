@@ -35,6 +35,8 @@ class MenuItemRequest extends FormRequest
             'category' => ['required', Rule::in(array_column(Catalog::categories(), 'code'))],
             'price' => ['required', 'numeric', 'gt:0'],
             'description' => ['nullable', 'string', 'max:255'],
+            'image' => ['nullable', 'file', 'image', 'mimes:jpg,jpeg,png,webp', 'max:3072'], // a real picture, 3 MB at most (no SVG)
+            'remove_image' => ['nullable', 'boolean'],
             'large' => ['nullable', 'numeric', 'min:0'],
             'template' => $editing ? ['prohibited'] : ['required', Rule::in(array_keys(OptionTemplates::all()))],
             'is_best_seller' => ['boolean'],
@@ -60,6 +62,10 @@ class MenuItemRequest extends FormRequest
             'ingredients.*.code.in' => 'Choose an ingredient from the list.',
             'ingredients.*.code.required' => 'Choose an ingredient from the list.',
             'template.prohibited' => 'An existing item keeps its options.',
+            'image.image' => 'Choose a JPG, PNG or WebP picture.',
+            'image.mimes' => 'Choose a JPG, PNG or WebP picture.',
+            'image.max' => 'That picture is over 3 MB. Choose a smaller one.',
+            'image.uploaded' => 'The picture could not be uploaded. It may be over the upload limit of this server.',
         ];
     }
 

@@ -36,3 +36,19 @@ body:not(.m-staff):not(.m-customer) .toast-pop { position: fixed; left: 50%; bot
 /* Reset demo data (admin/demo-reset) */
 .v-admin-demo-reset .reset-panel { max-width: 560px; }
 .v-admin-demo-reset .reset-list { margin: 0; padding-left: 1.2rem; display: grid; gap: 4px; }
+
+/* Menu item photos: they take the place of the drawn glass / plate */
+.art-photo { display: block; width: 100%; height: 100%; object-fit: cover; }
+.m-customer .thumb { overflow: hidden; }
+.m-customer .sheet-hero .art-photo { position: absolute; inset: 0; }
+.v-cashier-pos .tile-sw { overflow: hidden; }
+.v-cashier-pos .tile-sw .art-photo { height: 84px; border-radius: 6px; }
+.v-home-index .fav-art { overflow: hidden; }
+.v-home-index .fav-art .art-photo { position: absolute; inset: 0; }
+.v-home-index .fav-art .tags { z-index: 1; }
+.v-admin-menu img.sw { object-fit: cover; }
+.photo-row { display: flex; gap: 12px; align-items: center; }
+.photo-preview { width: 72px; height: 72px; border-radius: 10px; overflow: hidden; flex: none; background: var(--sunk); border: 1px solid var(--line); }
+.photo-preview img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.photo-inputs { display: grid; gap: 6px; flex: 1; min-width: 0; }
+.photo-inputs .check { font-size: .84rem; display: flex; gap: 6px; align-items: center; }

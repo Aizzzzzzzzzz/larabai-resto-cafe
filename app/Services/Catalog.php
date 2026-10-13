@@ -177,6 +177,8 @@ class Catalog
                 'price' => Num::tidy($item->price),
                 'description' => $item->description,
                 'tone' => json_decode($item->tone, true),
+                'image_path' => $item->image_path,
+                'image_url' => MenuImages::url($item->image_path),
                 'is_best_seller' => (bool) $item->is_best_seller,
                 'is_new' => (bool) $item->is_new,
                 'is_drink' => $isDrink,

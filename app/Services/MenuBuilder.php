@@ -32,6 +32,7 @@ class MenuBuilder
                 'description' => $attributes['description'] ?? null,
                 'price' => $attributes['price'],
                 'tone' => $attributes['tone'] ?? ['#6E5240', '#D8C3AE'],
+                'image_path' => $attributes['image_path'] ?? null,
                 'is_best_seller' => $attributes['is_best_seller'] ?? false,
                 'is_new' => $attributes['is_new'] ?? false,
                 'sold_out_override' => $attributes['sold_out_override'] ?? null,
@@ -64,7 +65,7 @@ class MenuBuilder
                 'price' => $attributes['price'],
                 'is_best_seller' => $attributes['is_best_seller'] ?? false,
                 'is_new' => $attributes['is_new'] ?? false,
-            ]);
+            ] + (array_key_exists('image_path', $attributes) ? ['image_path' => $attributes['image_path']] : []));
 
             if ($largeAdds !== null) {
                 $size = $item->optionGroups()->where('code', 'size')->first();

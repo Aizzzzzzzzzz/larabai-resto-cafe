@@ -99,7 +99,9 @@
                                     @if ($item['is_best_seller'])<span class="chip chip-gold">Best seller</span>@endif
                                     @if ($item['is_new'])<span class="chip chip-green">New</span>@endif
                                 </span>
-                                @if ($item['is_drink'])
+                                @if (! empty($item['image_url']))
+                                    <img class="art-photo" src="{{ $item['image_url'] }}" alt="{{ $item['name'] }}" loading="lazy">
+                                @elseif ($item['is_drink'])
                                     <span class="mini-glass" aria-hidden="true"><i style="height:24%;background:{{ $light }}"></i><i style="height:46%;background:linear-gradient(to top, {{ $light }}, {{ $dark }})"></i><i style="height:12%;background:{{ $light }};opacity:.55"></i></span>
                                 @else
                                     <span class="plate" aria-hidden="true"><i style="background:radial-gradient(circle at 35% 35%, {{ $light }}, {{ $dark }})"></i></span>

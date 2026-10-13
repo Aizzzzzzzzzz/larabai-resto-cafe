@@ -72,7 +72,33 @@ function initItemEditor() {
         if (deleteForm) deleteForm.action = form.action; // the same URL: PUT saves, DELETE removes
     }
 
+    // Photo: show the current one (with a "remove" box) when editing, and a preview of a newly chosen file
+    const photoInput = form.querySelector('[data-photo-input]');
+    const photoBox = form.querySelector('[data-photo-box]');
+    const photoImg = form.querySelector('[data-photo-preview]');
+    const photoRemove = form.querySelector('[data-photo-remove]');
+    let blobUrl = null;
+
+    function showPhoto(url, removable) {
+        if (blobUrl && url !== blobUrl) { URL.revokeObjectURL(blobUrl); blobUrl = null; }
+        photoBox.hidden = !url;
+        if (url) photoImg.src = url;
+        photoRemove.hidden = !removable;
+        photoRemove.querySelector('input[type=checkbox]').checked = false;
+    }
+
+    photoInput?.addEventListener('change', () => {
+        const file = photoInput.files[0];
+        if (!file) return;
+        blobUrl = URL.createObjectURL(file);
+        showPhoto(blobUrl, false);
+    });
+
     form.addEventListener('modal:filled', (e) => {
+        if (photoInput) {
+            photoInput.value = '';
+            showPhoto(e.detail?.image_url ?? '', Boolean(e.detail?.image_url));
+        }
         if (Array.isArray(e.detail?.ingredients)) {
             rows.replaceChildren();
             e.detail.ingredients.forEach((row) => addRow(row.code, row.qty));
