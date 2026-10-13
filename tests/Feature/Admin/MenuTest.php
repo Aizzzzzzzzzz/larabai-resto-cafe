@@ -189,11 +189,15 @@ class MenuTest extends TestCase
         $this->assertNull(MenuItem::where('name', 'Pork Sisig')->first()->optionGroups->firstWhere('code', 'size'));
     }
 
-    public function test_an_existing_item_keeps_its_options_template(): void
+    public function test_an_existing_item_keeps_its_options_even_if_the_form_sends_a_template(): void
     {
-        $edit = $this->item(['mode' => 'edit', 'name' => 'Café Latte']);
+        // The editor form always contains the (hidden) options choice, so editing must not trip over it
+        $edit = $this->item(['mode' => 'edit', 'name' => 'Café Latte', 'template' => 'meal']);
+        $groups = MenuItem::where('code', 'latte')->first()->optionGroups->pluck('code')->all();
 
-        $this->put(route('admin.menu-items.update', 'latte'), $edit)->assertSessionHasErrors('template'); // template is for new items only
+        $this->put(route('admin.menu-items.update', 'latte'), $edit)->assertSessionHasNoErrors()->assertRedirect();
+
+        $this->assertSame($groups, MenuItem::where('code', 'latte')->first()->optionGroups->pluck('code')->all());
         $this->put(route('admin.menu-items.update', 'tapa'), ['name' => 'Beef Tapa', 'template' => null, 'large' => null, 'category' => 'meals'] + $edit)->assertSessionHasNoErrors(); // no size, so no Large price needed
     }
 

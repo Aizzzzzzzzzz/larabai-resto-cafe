@@ -64,6 +64,7 @@ function initItemEditor() {
         const drink = field('category').selectedOptions[0]?.dataset.drink === '1';
 
         form.querySelector('[data-template]').hidden = editing;
+        field('template').disabled = editing; // an existing item keeps its options, so the choice isn't sent
         form.querySelector('[data-large]').hidden = !hasSize;
         form.querySelector('[data-item-delete]').hidden = !editing;
         form.querySelector('[data-cup-note]').textContent = drink

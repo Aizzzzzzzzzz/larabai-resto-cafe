@@ -38,7 +38,7 @@ class MenuItemRequest extends FormRequest
             'image' => ['nullable', 'file', 'image', 'mimes:jpg,jpeg,png,webp', 'max:3072'], // a real picture, 3 MB at most (no SVG)
             'remove_image' => ['nullable', 'boolean'],
             'large' => ['nullable', 'numeric', 'min:0'],
-            'template' => $editing ? ['prohibited'] : ['required', Rule::in(array_keys(OptionTemplates::all()))],
+            'template' => $editing ? ['exclude'] : ['required', Rule::in(array_keys(OptionTemplates::all()))],
             'is_best_seller' => ['boolean'],
             'is_new' => ['boolean'],
             'ingredients' => ['required', 'array', 'min:1'],
@@ -61,7 +61,6 @@ class MenuItemRequest extends FormRequest
             'ingredients.*.qty.numeric' => 'Every ingredient needs a quantity greater than zero.',
             'ingredients.*.code.in' => 'Choose an ingredient from the list.',
             'ingredients.*.code.required' => 'Choose an ingredient from the list.',
-            'template.prohibited' => 'An existing item keeps its options.',
             'image.image' => 'Choose a JPG, PNG or WebP picture.',
             'image.mimes' => 'Choose a JPG, PNG or WebP picture.',
             'image.max' => 'That picture is over 3 MB. Choose a smaller one.',

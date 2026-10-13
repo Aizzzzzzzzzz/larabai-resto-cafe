@@ -67,7 +67,7 @@ class MenuPhotoTest extends TestCase
     {
         $this->post(route('admin.menu-items.store'), $this->item(['image' => $this->photo('a.jpg')]));
         $first = MenuItem::where('name', 'Hazelnut Latte')->value('image_path');
-        $form = collect(['mode' => 'edit'] + $this->item())->except('template')->all();
+        $form = ['mode' => 'edit'] + $this->item(); // like the browser, it still sends the hidden options choice
 
         // Saving without a file keeps the photo
         $this->put(route('admin.menu-items.update', 'hazelnut-latte'), $form)->assertSessionHasNoErrors();
