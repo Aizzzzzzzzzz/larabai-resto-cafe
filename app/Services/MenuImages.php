@@ -20,9 +20,9 @@ class MenuImages
     public const DIRECTORY = 'menu';
 
     /** Saves the upload and returns its path on the public disk, e.g. "menu/Qk3….webp". */
-    public function store(UploadedFile $file, string $directory = self::DIRECTORY, int $maxSide = self::MAX_SIDE): string
+    public function store(UploadedFile $file, string $directory = self::DIRECTORY, int $maxSide = self::MAX_SIDE, string $field = 'image'): string
     {
-        $redrawn = $this->redraw($file, $maxSide);
+        $redrawn = $this->redraw($file, $maxSide, $field);
 
         if ($redrawn) {
             [$bytes, $extension] = $redrawn;
@@ -50,7 +50,7 @@ class MenuImages
     }
 
     /** @return array{0: string, 1: string}|null the picture's bytes and file extension */
-    private function redraw(UploadedFile $file, int $maxSide): ?array
+    private function redraw(UploadedFile $file, int $maxSide, string $field): ?array
     {
         if (! function_exists('imagecreatefromstring')) {
             return null;
@@ -59,7 +59,7 @@ class MenuImages
         $source = @imagecreatefromstring((string) file_get_contents($file->getRealPath()));
         if (! $source) {
             // Whatever the file claims to be, if it can't be read as a picture it is not stored at all
-            throw ValidationException::withMessages(['image' => 'That file could not be read as a picture. Choose a JPG, PNG or WebP.']);
+            throw ValidationException::withMessages([$field => 'That file could not be read as a picture. Choose a JPG, PNG or WebP.']);
         }
 
         [$width, $height] = [imagesx($source), imagesy($source)];

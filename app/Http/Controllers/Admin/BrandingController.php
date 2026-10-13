@@ -24,7 +24,7 @@ class BrandingController extends Controller
         $old = Branding::logoPath();
 
         if ($request->hasFile('logo')) {
-            $new = $images->store($request->file('logo'), Branding::DIRECTORY, Branding::MAX_SIDE);
+            $new = $images->store($request->file('logo'), Branding::DIRECTORY, Branding::MAX_SIDE, 'logo');
             Settings::set(Branding::SETTING, $new);
             $images->delete($old);
             AuditLogger::record('Changed logo', 'New logo uploaded', $request->user());
