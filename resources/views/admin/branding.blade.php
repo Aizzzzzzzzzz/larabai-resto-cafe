@@ -11,7 +11,7 @@
             @method('PUT')
 
             <div class="brand-preview" aria-label="How the logo looks in the header">
-                <div class="bp light"><span class="brand"><x-brand-mark data-logo-preview-mark /><span class="brand-name">{{ config('cafe.name') }}</span></span></div>
+                <div class="bp light"><span class="brand"><x-brand-mark /><span class="brand-name">{{ config('cafe.name') }}</span></span></div>
                 <div class="bp dark" data-theme="dark"><span class="brand"><x-brand-mark /><span class="brand-name">{{ config('cafe.name') }}</span></span></div>
             </div>
 

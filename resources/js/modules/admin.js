@@ -4,6 +4,7 @@
 export function initAdmin() {
     if (document.body.dataset.module !== 'admin') return;
     initItemEditor();
+    initBranding();
     initUserForm();
 }
 
