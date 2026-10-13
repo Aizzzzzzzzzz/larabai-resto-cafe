@@ -6,11 +6,14 @@ body:not(.m-staff):not(.m-customer) .toast-pop { position: fixed; left: 50%; bot
 /* "Tap again to confirm" state (mockup styled it on the navigator only) */
 .btn.armed { color: var(--danger); border-color: var(--danger); }
 
-/* Placeholder shown on screens not ported yet (UI scaffold only) */
-.scaffold-note { margin: 24px auto; max-width: 560px; padding: 20px 22px; border: 1px dashed var(--border); border-radius: 14px; color: var(--text-muted); display: grid; gap: 8px; text-align: center; }
-.scaffold-note b { color: var(--ink); font-family: var(--display); font-size: 1.1rem; }
-.scaffold-note code { font: 500 .8rem var(--mono); }
-.scaffold-note form { display: flex; justify-content: center; }
+/* Friendly error pages (resources/views/errors) */
+.v-error-page { min-height: 100vh; display: grid; place-items: center; padding: 32px 20px; background: var(--bg); color: var(--text); font-family: var(--body); }
+.v-error-page .error-page { width: 100%; max-width: 460px; display: grid; gap: 14px; justify-items: start; }
+.v-error-page .brand { margin-bottom: 18px; color: var(--text); text-decoration: none; display: inline-flex; align-items: center; gap: 10px; font: 700 1rem var(--display); }
+.v-error-page .error-code { margin: 0; font: 500 .8rem var(--mono); letter-spacing: .12em; text-transform: uppercase; color: var(--accent-strong); }
+.v-error-page h1 { margin: 0; font: 800 clamp(2rem, 8vw, 2.8rem) var(--display); letter-spacing: -.03em; line-height: 1.02; }
+.v-error-page .error-text { margin: 0; color: var(--text-muted); line-height: 1.55; }
+.v-error-page .error-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 8px; }
 
 /* Printable QR sheet (admin/table-qr): cards of two columns on screen, a grid on paper */
 .v-admin-table-qr .qr-sheet { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 16px; }

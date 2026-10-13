@@ -55,6 +55,27 @@ class DashboardTest extends TestCase
         $this->get(route('admin.dashboard'))->assertSee('Payment recorded')->assertSee('See the full audit log');
     }
 
+    public function test_a_quiet_week_renders_instead_of_crashing(): void
+    {
+        // The day a brand-new café has no sales at all: every empty state in one render
+        $html = view('admin.dashboard', [
+            'greeting' => 'Good morning, Maria',
+            'kpis' => ['sales' => 0, 'salesBefore' => 0, 'orders' => 0, 'ordersBefore' => 0, 'average' => 0, 'averageBefore' => 0, 'discounts' => 0],
+            'salesChart' => array_map(fn ($i) => ['label' => "Day {$i}", 'value' => 0, 'tip' => ''], range(1, 14)),
+            'mixLast30' => [['label' => 'GCash', 'color' => 'red', 'value' => 0], ['label' => 'Cash', 'color' => 'blue', 'value' => 0]],
+            'mixToday' => null,
+            'hoursChart' => array_map(fn ($h) => ['label' => "{$h}a", 'value' => 0, 'tip' => ''], range(7, 21)),
+            'best' => [],
+            'activity' => collect(),
+            'attention' => [],
+        ])->render();
+
+        $this->assertStringContainsString('No sales in the last 7 days yet.', $html);
+        $this->assertStringContainsString('No paid orders yet today.', $html);
+        $this->assertStringContainsString('No activity yet.', $html);
+        $this->assertStringContainsString('₱0.00', $html);
+    }
+
     public function test_nice_axis_maximums(): void
     {
         $this->assertSame(1.0, BarChart::niceMax(0));

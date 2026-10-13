@@ -33,7 +33,7 @@ return [
         'local' => [
             'driver' => 'local',
             'root' => storage_path('app/private'),
-            'serve' => true,
+            'serve' => false, // the café keeps no private files, so no /storage/{path} route
             'throw' => false,
             'report' => false,
         ],

@@ -43,6 +43,18 @@
 > DemoData in the session, with a throttle and a safe `next` check; counts on the homepage come from the
 > data. Phase 0 still owes: users table + hashed passwords, `Auth::attempt`, `auth` + `role:` middleware,
 > policies, "last login", and the Logged in / Failed login audit entries.)*
+>
+> **2026-10-13 — Scaffold Step 8 done — Stage 2 (UI scaffold) complete.** Site crawler, state-table control
+> tests, a route-map lock for §4 (58 named routes), friendly error pages, favicon, README, fresh-clone check.
+> *(actual: §4's "Component" column is now Controller@action → view, since there are no framework components;
+> extra routes beyond the plan: `navigator.components.*`, `admin.menu-items.availability`.)*
+>
+> **Where Stage 3 starts — Phase 0, with the scaffold's leftovers to replace:**
+> `App\Support\CurrentStaff` → `auth()->user()`; `LoginController` demo check → `Auth::attempt` + hashed passwords;
+> add `auth` + `role:` middleware to the four staff route groups (and re-run `SiteIntegrityTest` once per role);
+> `App\Support\DemoData` / `DemoSales` / `DemoAudit` / `DemoMovements` → models + seeders (the sample data becomes
+> the seed data); `CashierActions` / `KitchenActions` → `OrderWorkflow`; every `demoSaved()` call → a real service call.
+> Search the code for `UI scaffold:` comments — each marks one of these swaps.
 
 ---
 

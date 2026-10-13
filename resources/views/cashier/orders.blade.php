@@ -100,7 +100,7 @@
 
 @push('modals')
     {{-- One modal for every row's Cancel / Void; the clicked button fills in the order (core/modal.js) --}}
-    <x-modal id="reasonModal" title="Cancel order?" action="{{ route('cashier.orders.index') }}">
+    <x-modal id="reasonModal" title="Cancel order?" action="{{ route('cashier.orders.index') }}" shared>
         <p class="muted" style="font-size:.9rem" data-modal-text></p>
         <label class="lbl">Reason
             <select class="input" name="reason">

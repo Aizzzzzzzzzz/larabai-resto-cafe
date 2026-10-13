@@ -150,7 +150,7 @@
             <button type="submit" class="btn btn-primary" data-modal-submit>Save</button>
         </x-slot:footer>
     </x-modal>
-    <form id="itemDeleteForm" method="POST" action="{{ route('admin.menu-items.index') }}" hidden>
+    <form id="itemDeleteForm" method="POST" action="{{ route('admin.menu-items.index') }}" hidden data-shared-action>
         @csrf
         @method('DELETE')
     </form>

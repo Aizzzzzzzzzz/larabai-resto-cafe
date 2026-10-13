@@ -1,10 +1,10 @@
-@props(['id', 'title', 'action', 'method' => 'POST', 'spoof' => false, 'wide' => false, 'submit' => 'Save', 'danger' => false])
+@props(['id', 'title', 'action', 'method' => 'POST', 'spoof' => false, 'shared' => false, 'wide' => false, 'submit' => 'Save', 'danger' => false])
 
 {{--
     Staff modal holding one real form (mockup .modal-back > form.modal).
     Open it with any element carrying data-modal-open="{{ $id }}". If the form fails validation,
     the page comes back with the modal open (hidden _modal field + data-modal-autoopen).
-    A shared modal (one per screen, many rows) gets its action from the opener's data-action —
+    A shared modal (one per screen, many rows — pass `shared`) gets its action from the opener's data-action —
     see resources/js/core/modal.js; _action keeps it across a failed validation.
     Slots: default = body fields; optional "footer" replaces the Cancel / Save buttons.
 --}}
@@ -15,7 +15,7 @@
     $formAction = $kept !== '' && str_starts_with($kept, url('/').'/') ? $kept : $action;
 @endphp
 <div class="modal-back" id="{{ $id }}" hidden @if ($reopen) data-modal-autoopen @endif>
-    <form {{ $attributes->class(['modal', 'wide' => $wide]) }} method="POST" action="{{ $formAction }}" role="dialog" aria-modal="true" aria-labelledby="{{ $id }}-title" novalidate>
+    <form {{ $attributes->class(['modal', 'wide' => $wide]) }} @if ($shared) data-shared-action @endif method="POST" action="{{ $formAction }}" role="dialog" aria-modal="true" aria-labelledby="{{ $id }}-title" novalidate>
         @csrf
         {{-- Method spoofing; a shared add/edit modal passes spoof so its opener can switch POST ↔ PUT (core/modal.js data-method) --}}
         @if ($spoof || strtoupper($method) !== 'POST')

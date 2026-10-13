@@ -49,11 +49,15 @@
         </section>
         <section class="panel panel-pad">
             <div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px"><h2>Best sellers</h2><span class="hint">Last 7 days, by cups/plates sold</span></div>
-            <ol class="rank">
-                @foreach ($best as $i => $item)
-                    <li><span class="n">{{ $i + 1 }}</span><b>{{ $item['name'] }}</b><span class="v">{{ $item['qty'] }} sold · {{ peso($item['revenue'], false) }}</span><span class="meter"><i style="width:{{ $item['qty'] / $best[0]['qty'] * 100 }}%"></i></span></li>
-                @endforeach
-            </ol>
+            @if ($best)
+                <ol class="rank">
+                    @foreach ($best as $i => $item)
+                        <li><span class="n">{{ $i + 1 }}</span><b>{{ $item['name'] }}</b><span class="v">{{ $item['qty'] }} sold · {{ peso($item['revenue'], false) }}</span><span class="meter"><i style="width:{{ $item['qty'] / $best[0]['qty'] * 100 }}%"></i></span></li>
+                    @endforeach
+                </ol>
+            @else
+                <p class="hint">No sales in the last 7 days yet.</p>
+            @endif
         </section>
     </div>
 

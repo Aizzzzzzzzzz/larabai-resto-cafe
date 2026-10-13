@@ -102,7 +102,7 @@
 
     {{-- Restock: one modal for every row. The row button fills it (core/modal.js); the ctx_* fields keep what
          the preview needs, so it still works after a failed submit. --}}
-    <x-modal id="restockModal" :title="old('_modal') === 'restockModal' && old('ctx_name') ? 'Restock '.old('ctx_name') : 'Restock'" :action="route('inventory.ingredients.index')" data-restock-form>
+    <x-modal id="restockModal" :title="old('_modal') === 'restockModal' && old('ctx_name') ? 'Restock '.old('ctx_name') : 'Restock'" :action="route('inventory.ingredients.index')" shared data-restock-form>
         <input type="hidden" name="ctx_name" value="{{ old('ctx_name') }}">
         <input type="hidden" name="ctx_stock" value="{{ old('ctx_stock') }}">
         <input type="hidden" name="ctx_reorder" value="{{ old('ctx_reorder') }}">
@@ -144,7 +144,7 @@
     </x-modal>
 
     {{-- Edit ingredient: the unit is fixed (changing it would break recipes) and stock changes go through Restock --}}
-    <x-modal id="ingredientEdit" title="Edit ingredient" :action="route('inventory.ingredients.index')" method="PUT">
+    <x-modal id="ingredientEdit" title="Edit ingredient" :action="route('inventory.ingredients.index')" method="PUT" shared>
         <div class="form-grid">
             <label class="lbl full">Name<input class="input" name="name" value="{{ $typed('ingredientEdit', 'name') }}" required></label>
             <label class="lbl">Category<input class="input" name="category" list="categoryList" value="{{ $typed('ingredientEdit', 'category') }}" required></label>

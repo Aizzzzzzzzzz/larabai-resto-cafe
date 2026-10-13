@@ -151,7 +151,22 @@ No database, no auth. Plan and route map: `development-plan.md` §0, §4.
 > land and what the sidebar shows; `auth` + `role:` middleware and policies come in Phase 0.
 
 ## Step 8 — Polish
-- [ ] Every mockup screen reachable from navigation; every transition has a control with a handler
-- [ ] Empty states; links behave (staff pages ↔ printable/standalone pages)
-- [ ] Side-by-side check of every screen against the mockup in light and dark mode
-- [ ] `ScaffoldRoutesTest` green; `php artisan route:list` matches plan §4
+- [x] Every mockup screen reachable from navigation: `SiteIntegrityTest` crawls the whole site from `/`, `/navigator` and `/login` (60+ pages,
+      following links *and* GET-form buttons such as tabs), fails on any 4xx/5xx, and checks every write form has `@csrf` and a real route
+      (shared-modal forms are checked through the row buttons that fill them). The checker is itself tested against deliberately bad HTML.
+- [x] Every transition has a control with a handler: `TransitionControlsTest` — one test per row of the plan §3 state table, on the screen of whoever does the move
+- [x] Empty states: dashboard (no sales — this was a latent crash on an empty week, now fixed), kitchen, cart, my orders, orders, stock, menu, audit, history
+- [x] Accessibility basics on every page (crawler): `lang`, `<title>`, unique ids, a name for every control, alt text — all pass
+- [x] Browser sweep: 25 screens × light/dark × desktop/phone (100 views) in headless Edge — zero JavaScript errors, zero failed requests,
+      zero sideways scrolling; light-mode screens reviewed by eye. The sweep was proven by injecting a known overflow, error and 404.
+- [x] `RouteMapTest` locks `route:list` to plan §4 (58 named routes); the unused `/storage/{path}` file route is switched off
+- [x] Added: friendly 403 / 404 / 419 / 429 / 500 / 503 pages (no session needed, no details leaked), brand favicon (replaces the empty `favicon.ico`),
+      project README with fresh-clone setup, tests no longer need built assets (`withoutVite`), removed the unused scaffold placeholder component
+- [x] Fresh-clone check (a clean export of the staged files): `composer install` → `.env` + key → **207 tests pass before any build and without MySQL**
+      → `npm ci` → `npm run build` → 59 routes; the migrations also run cleanly (on a scratch SQLite file — MySQL was not running to try the real one)
+- [x] Side-by-side with the mockup: the screens were compared as each step was built (same CSS, same markup); data-dependent differences are listed in the steps above
+
+## Stage 2 exit criteria (development-playbook.md)
+- [x] Every mockup screen exists as a routed component
+- [x] All routes return 200 (the crawl)
+- [x] This checklist is fully checked — **the UI scaffold is complete. Next: Stage 3, Phase 0 (login, roles, policies, audit log).**

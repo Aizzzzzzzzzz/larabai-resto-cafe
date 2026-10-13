@@ -1,58 +1,118 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Brew & Bite Café — QR ordering, payment and inventory system
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+A Laravel web system for a small café in Tarlac City: customers scan the QR code on their table, order and pay
+from their phone; the cashier, kitchen, stock clerk and owner each have their own screen. A final project for
+**IT52 System Integration and Architecture**, **IT54 Advance Database System** and **IT55 Advance Web Development**
+(Dominican College of Tarlac).
 
-## About Laravel
+> **Status — UI scaffold complete.** Every screen from the static mockup is built as a Laravel page with
+> sample data and working forms, but **nothing is saved yet**: forms answer with *"Demo only — nothing is saved"*.
+> The database, real login and role protection come next (see [Where we are](#where-we-are)).
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## What's in it
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+| Screen | For | Path |
+|---|---|---|
+| Café homepage | everyone | `/` |
+| Table menu, cart, checkout, simulated GCash / Maya, receipt, order tracker | customers (scan a table QR) | `/order/…` |
+| Point of sale, orders, payment with Senior/PWD discount, receipt | cashier | `/cashier/…` |
+| Kitchen display, sold-out switches | kitchen | `/kitchen` |
+| Stock, restocking, stock history | stock clerk | `/inventory/…` |
+| Dashboard, menu & prices, users & roles, audit logs, table QR sheet | owner / admin | `/admin/…` |
+| Staff login | staff | `/login` |
+| System navigator (a launch pad for demos) | presenter, demo mode only | `/navigator` |
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+## Requirements
 
-## Learning Laravel
+- PHP **8.2+** with the `pdo_mysql`, `mbstring`, `openssl`, `fileinfo`, `curl` and `zip` extensions
+- Composer 2, Node.js 20+ and npm
+- MySQL 8 (Laragon's works out of the box)
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+## Setting up from a fresh clone
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+```bash
+git clone https://github.com/Aizzzzzzzzzz/larabai-resto-cafe.git
+cd larabai-resto-cafe
 
-## Laravel Sponsors
+# 1. Create the database (Laragon: start MySQL first; the default user is root with no password)
+mysql -uroot -e "CREATE DATABASE larabai_database CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+# 2. Install, configure, migrate and build — one command
+composer setup
+```
 
-### Premium Partners
+`composer setup` installs the PHP and JavaScript packages, copies `.env.example` to `.env`, generates the app key,
+runs the migrations and builds the CSS/JS. Then open the site:
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+- **Laragon:** reload Laragon (Menu → Reload) and open `http://larabai-resto-cafe.test`
+- **Anywhere else:** `php artisan serve` and open `http://127.0.0.1:8000` (set `APP_URL` in `.env` to that address,
+  because the table QR codes are built from it)
 
-## Contributing
+For development with hot reload of the CSS/JS use `composer dev`.
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+> MySQL must be running whenever you open the site: the app keeps sessions in the database.
 
-## Code of Conduct
+### Settings in `.env`
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+| Setting | Default | Meaning |
+|---|---|---|
+| `DB_DATABASE`, `DB_USERNAME`, `DB_PASSWORD` | `larabai_database`, `root`, *(empty)* | the MySQL connection |
+| `APP_URL` | `http://larabai-resto-cafe.test` | the café's address; printed into the table QR codes |
+| `CAFE_DEMO_MODE` | `true` | shows the system navigator, the demo accounts on the login page and *Reset demo data*. **Set to `false` for a real café.** |
+| `APP_TIMEZONE` | `Asia/Manila` | the café's clock |
 
-## Security Vulnerabilities
+## Trying it
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+1. Open `/navigator` (or `/login`) and use the **demo accounts**:
+
+   | Role | Username / password | Opens |
+   |---|---|---|
+   | Owner / admin | `admin` / `admin123` | Dashboard |
+   | Cashier | `cashier` / `cashier123` (also `cashier2`) | Point of sale |
+   | Kitchen | `kitchen` / `kitchen123` | Kitchen display |
+   | Stock clerk | `stock` / `stock123` | Stock |
+
+2. Click a table on the navigator's floor plan — that is the same as scanning its QR code — and place an order.
+3. Print the real QR codes from **Admin → Table QR codes**.
+
+The demo passwords are plain text in the sample data and shown only in demo mode; real accounts will be hashed.
+
+## Tests
+
+```bash
+php artisan test
+```
+
+Over 200 tests cover every module, plus a crawler that follows every link and form on every page, a check that each
+workflow step has a button, and a lock on the route list. They run without a database.
+
+## How it is built
+
+Server-rendered **Blade** pages, controllers and ordinary HTML forms with `@csrf` — **no Livewire**, no SPA.
+A little plain JavaScript (`resources/js`) handles previews and small interactions; the server always re-checks
+every price, total and quantity. The look comes from the mockup's stylesheet, kept unchanged in `resources/css/mockup.css`.
+
+```
+app/Http/Controllers/<Module>/   thin controllers: validate → check rules → redirect with a message
+app/Http/Requests/<Module>/      form validation
+app/Services/                    Pricing (discounts, VAT), CustomerCart, StockUsage, QrCodes
+app/Support/                     sample data (DemoData…), rules shared by screens, formatting
+resources/views/<module>/        Blade pages;  components/ = shared pieces
+larabai-mockup/                  the static mockup, the project document and the build plan
+```
+
+## Where we are
+
+The project follows [`larabai-mockup/development-playbook.md`](larabai-mockup/development-playbook.md):
+spec → mockup → **UI scaffold (done)** → real build.
+
+- Plan: [`larabai-mockup/development-plan.md`](larabai-mockup/development-plan.md) — data model, order state table, route map, build phases
+- Scaffold checklist: [`larabai-mockup/ui-scaffold-checklist.md`](larabai-mockup/ui-scaffold-checklist.md)
+- Project document: [`larabai-mockup/document.md`](larabai-mockup/document.md)
+
+**Next — Phase 0 onward:** real login and hashed passwords, `auth` + role protection on every staff screen, the MySQL
+tables and seeders (the sample data becomes the seed data), the order state machine, then each module's real writes.
+Until Phase 0, any visitor can open any staff screen by its address.
 
 ## License
 

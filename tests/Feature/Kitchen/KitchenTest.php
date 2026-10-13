@@ -68,6 +68,21 @@ class KitchenTest extends TestCase
             ->assertDontSee('<html', false);
     }
 
+    public function test_a_quiet_night_shows_friendly_empty_columns(): void
+    {
+        $html = view('kitchen.partials.board', [
+            'columns' => ['new' => collect(), 'prep' => collect(), 'ready' => collect()],
+            'stats' => ['queue' => 0, 'avgPrep' => '–', 'done' => 0],
+            'recent' => collect(),
+        ])->render();
+
+        $this->assertStringContainsString('No new orders. New paid orders appear here.', $html);
+        $this->assertStringContainsString('Nothing in progress.', $html);
+        $this->assertStringContainsString('Nothing waiting to be served.', $html);
+        $this->assertStringContainsString('Finished orders will appear here.', $html);
+        $this->assertStringContainsString('Avg prep today <b>–</b>', $html);
+    }
+
     public function test_sold_out_drawer_lists_every_item_as_a_switch(): void
     {
         $this->get(route('kitchen.display'))->assertSee('data-drawer hidden', false)->assertSee('Taro Milk Tea · sold out');
