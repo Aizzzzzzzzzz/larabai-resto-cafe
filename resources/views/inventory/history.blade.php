@@ -8,7 +8,7 @@
     $unit = $ingredient['unit'];
 @endphp
 
-@section('title', $ingredient['name'].' · Stock History · Brew & Bite Café')
+@section('title', $ingredient['name'].' · Stock History · LaraBai Baristro')
 @section('heading', $ingredient['name'])
 @section('sub', 'Stock history · the last 40 movements, newest first')
 @section('actions')

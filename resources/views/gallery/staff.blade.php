@@ -1,6 +1,6 @@
 @extends('layouts.staff', ['module' => 'gallery', 'view' => 'staff', 'active' => '', 'badges' => ['awaiting' => 3, 'lowstock' => 6]])
 
-@section('title', 'Components · Brew & Bite Café')
+@section('title', 'Components · LaraBai Baristro')
 @section('heading', 'Shared components')
 @section('sub', 'Staff side · sample data · demo mode only')
 @section('actions')

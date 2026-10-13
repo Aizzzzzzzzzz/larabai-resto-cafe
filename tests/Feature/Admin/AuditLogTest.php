@@ -62,7 +62,7 @@ class AuditLogTest extends TestCase
         $csv = $response->streamedContent();
 
         $response->assertOk()->assertHeader('content-type', 'text/csv; charset=UTF-8');
-        $this->assertStringContainsString('attachment; filename=brew-bite-audit-'.now()->format('Ymd').'.csv', $response->headers->get('content-disposition'));
+        $this->assertStringContainsString('attachment; filename=larabai-audit-'.now()->format('Ymd').'.csv', $response->headers->get('content-disposition'));
         $this->assertStringStartsWith("\xEF\xBB\xBFDate,User,Role,Area,Action,Details", $csv);
         $this->assertStringContainsString('Voided order', $csv);
         $this->assertStringNotContainsString('Payment recorded', $csv);

@@ -1,10 +1,10 @@
 @extends('layouts.kitchen', ['view' => 'display'])
 
-@section('title', 'Kitchen Display · Brew & Bite Café')
+@section('title', 'Kitchen Display · LaraBai Baristro')
 
 @section('content')
     <header class="k-head">
-        <a class="brand" href="{{ route('navigator') }}"><span class="brand-mark">B&amp;B</span></a>
+        <a class="brand" href="{{ route('navigator') }}"><span class="brand-mark">LB</span></a>
         <h1>Kitchen display</h1>
         @include('kitchen.partials.stats')
         <div class="k-tools">

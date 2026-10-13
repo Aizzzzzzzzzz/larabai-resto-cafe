@@ -1,12 +1,12 @@
 @extends('layouts.public', ['module' => 'home'])
 
-@section('title', 'Brew & Bite Café · Tarlac City')
-@section('description', 'Brew & Bite Café in Tarlac City: espresso drinks, milk tea, silog meals and fresh pastries. Open daily 7 AM to 10 PM.')
+@section('title', 'LaraBai Baristro · Tarlac City')
+@section('description', 'LaraBai Baristro in Tarlac City: espresso drinks, milk tea, silog meals and fresh pastries. Open daily 7 AM to 10 PM.')
 
 @section('content')
     <nav class="nav" aria-label="Main">
         <div class="container">
-            <a class="brand" href="{{ route('home') }}"><span class="brand-mark">B&amp;B</span><span class="brand-name">{{ config('cafe.name') }}</span></a>
+            <a class="brand" href="{{ route('home') }}"><span class="brand-mark">LB</span><span class="brand-name">{{ config('cafe.name') }}</span></a>
             <ul>
                 <li><a href="#about">About</a></li>
                 <li><a href="#favorites">Favorites</a></li>
@@ -71,7 +71,7 @@
                         <div class="eyebrow">Our story</div>
                         <h2>A neighborhood café for students, workers and barkadas</h2>
                     </div>
-                    <p>Brew &amp; Bite started in 2022 as a small coffee counter near the city center. Today we have {{ $stats['tables'] }} tables, a full kitchen and a team of nine who know most of our regulars by name and by order.</p>
+                    <p>LaraBai Baristro started in 2022 as a small coffee counter near the city center. Today we have {{ $stats['tables'] }} tables, a full kitchen and a team of nine who know most of our regulars by name and by order.</p>
                     <p>We use Benguet arabica for our espresso, Davao cacao for our chocolate drinks and fresh milk delivered every morning. Our rice meals are cooked the way we like them at home: generous, garlicky and served with atchara on the side.</p>
                 </div>
                 <div class="about-stats">
@@ -150,11 +150,11 @@
                         <dt>Discounts</dt><dd>{{ config('cafe.senior_pwd.percent') }}% off for senior citizens and PWDs. Show your ID at the counter.</dd>
                     </dl>
                 </div>
-                <div class="map" role="img" aria-label="Map: Brew and Bite Café on F. Tañedo Street, San Nicolas, Tarlac City">
+                <div class="map" role="img" aria-label="Map: LaraBai Baristro on F. Tañedo Street, San Nicolas, Tarlac City">
                     <span class="street v">F. Tañedo St.</span>
                     <span class="street h">Zamora St.</span>
                     <span class="street d">MacArthur Hwy</span>
-                    <span class="pin"><b>Brew &amp; Bite Café</b><i></i><span class="dot"></span></span>
+                    <span class="pin"><b>LaraBai Baristro</b><i></i><span class="dot"></span></span>
                 </div>
             </div>
         </section>
@@ -162,7 +162,7 @@
 
     <footer>
         <div class="container">
-            <span class="brand"><span class="brand-mark">B&amp;B</span><span class="brand-name">{{ config('cafe.name') }}</span></span>
+            <span class="brand"><span class="brand-mark">LB</span><span class="brand-name">{{ config('cafe.name') }}</span></span>
             <small>© {{ now()->year }} {{ config('cafe.name') }} · A fictional café for a case study</small>
         </div>
     </footer>

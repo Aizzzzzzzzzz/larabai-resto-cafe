@@ -1,6 +1,6 @@
 @extends('layouts.staff', ['module' => 'admin', 'view' => 'demo-reset', 'active' => 'dashboard'])
 
-@section('title', 'Reset Demo Data · Brew & Bite Café')
+@section('title', 'Reset Demo Data · LaraBai Baristro')
 @section('heading', 'Reset demo data')
 @section('sub', 'Clears every saved record and restores the sample data')
 @section('actions')

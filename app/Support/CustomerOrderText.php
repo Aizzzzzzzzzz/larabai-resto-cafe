@@ -21,7 +21,7 @@ class CustomerOrderText
                 'delivery' => ['Out for delivery', 'Our rider is on the way to your address.'],
                 default => ['Ready for pickup', 'Your order is waiting at the counter. Show your order number.'],
             },
-            'completed' => ['Enjoy!', 'Thanks for ordering at Brew & Bite Café.'],
+            'completed' => ['Enjoy!', 'Thanks for ordering at LaraBai Baristro.'],
             'cancelled' => ['Order cancelled', 'This order was cancelled. Nothing was charged.'],
             'voided' => ['Order voided', 'The cashier voided this order. Please see the counter for your refund.'],
         };

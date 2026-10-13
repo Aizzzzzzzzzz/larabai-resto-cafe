@@ -1,12 +1,12 @@
 @extends('layouts.customer', ['view' => 'menu'])
 
-@section('title', 'Menu · Brew & Bite Café')
+@section('title', 'Menu · LaraBai Baristro')
 
 @section('content')
     <div class="app">
         <header class="c-head">
             <div class="c-head-row">
-                <span class="brand"><span class="brand-mark">B&amp;B</span><span class="brand-name">Brew &amp; Bite Café</span></span>
+                <span class="brand"><span class="brand-mark">LB</span><span class="brand-name">LaraBai Baristro</span></span>
                 <span class="head-right">
                     <span class="session-pill">{{ $sessionLabel }}</span>
                     <x-theme-toggle />

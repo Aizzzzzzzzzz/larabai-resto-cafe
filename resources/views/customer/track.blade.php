@@ -1,6 +1,6 @@
 @extends('layouts.customer', ['view' => 'track'])
 
-@section('title', 'Track order · Brew & Bite Café')
+@section('title', 'Track order · LaraBai Baristro')
 
 @php
     use App\Enums\OrderStatus;

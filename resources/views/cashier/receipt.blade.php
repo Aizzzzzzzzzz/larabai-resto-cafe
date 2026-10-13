@@ -9,7 +9,7 @@
     $d = $order['discount'];
 @endphp
 
-@section('title', 'Receipt · Brew & Bite Café')
+@section('title', 'Receipt · LaraBai Baristro')
 @section('heading', 'Receipt')
 @section('sub', $order['order_no'].' · '.Format::orderType($order['order_type'], $order['table_no']))
 @section('actions')

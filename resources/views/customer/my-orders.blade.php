@@ -1,6 +1,6 @@
 @extends('layouts.customer', ['view' => 'track'])
 
-@section('title', 'My orders · Brew & Bite Café')
+@section('title', 'My orders · LaraBai Baristro')
 
 {{-- Shown only when this phone hasn't placed an order yet; otherwise "My orders" opens the newest order. --}}
 @section('content')

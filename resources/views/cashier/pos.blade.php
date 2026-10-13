@@ -1,6 +1,6 @@
 @extends('layouts.staff', ['module' => 'cashier', 'view' => 'pos', 'active' => 'pos'])
 
-@section('title', 'Point of Sale · Brew & Bite Café')
+@section('title', 'Point of Sale · LaraBai Baristro')
 @section('heading', 'Point of sale')
 @section('sub', 'Walk-in and counter orders')
 @section('actions')

@@ -6,7 +6,7 @@
     use App\Support\Format;
 @endphp
 
-@section('title', 'Orders · Brew & Bite Café')
+@section('title', 'Orders · LaraBai Baristro')
 @section('heading', 'Orders')
 @section('sub', 'QR and counter orders · updates automatically')
 @section('actions')

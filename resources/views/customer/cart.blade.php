@@ -1,6 +1,6 @@
 @extends('layouts.customer', ['view' => 'cart'])
 
-@section('title', 'Your order · Brew & Bite Café')
+@section('title', 'Your order · LaraBai Baristro')
 
 @section('content')
     <div class="app">

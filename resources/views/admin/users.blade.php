@@ -9,7 +9,7 @@
     $addUser = ['mode' => 'add', 'self' => 0, 'full_name' => '', 'username' => '', 'role' => 'cashier', 'is_active' => 1];
 @endphp
 
-@section('title', 'Users & Roles · Brew & Bite Café')
+@section('title', 'Users & Roles · LaraBai Baristro')
 @section('heading', 'Users & roles')
 @section('sub', 'Who can log in and which screens they can open')
 @section('actions')

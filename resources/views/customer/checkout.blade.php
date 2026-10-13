@@ -1,6 +1,6 @@
 @extends('layouts.customer', ['view' => 'checkout'])
 
-@section('title', 'Checkout · Brew & Bite Café')
+@section('title', 'Checkout · LaraBai Baristro')
 
 @php
     $typeLabels = [

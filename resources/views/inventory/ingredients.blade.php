@@ -7,7 +7,7 @@
     $typed = fn (string $modal, string $field, $default = '') => old('_modal') === $modal ? old($field, $default) : $default;
 @endphp
 
-@section('title', 'Stock · Brew & Bite Café')
+@section('title', 'Stock · LaraBai Baristro')
 @section('heading', 'Stock')
 @section('sub', 'Ingredients are deducted automatically as orders are paid')
 @section('actions')

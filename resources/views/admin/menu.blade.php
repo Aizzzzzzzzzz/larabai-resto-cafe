@@ -17,7 +17,7 @@
     ];
 @endphp
 
-@section('title', 'Menu & Prices · Brew & Bite Café')
+@section('title', 'Menu & Prices · LaraBai Baristro')
 @section('heading', 'Menu & prices')
 @section('sub', 'Each item lists the ingredients it uses; selling it deducts them from Stock')
 @section('actions')

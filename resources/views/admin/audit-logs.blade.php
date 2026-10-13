@@ -4,7 +4,7 @@
     use App\Support\Format;
 @endphp
 
-@section('title', 'Audit Logs · Brew & Bite Café')
+@section('title', 'Audit Logs · LaraBai Baristro')
 @section('heading', 'Audit logs')
 @section('sub', 'Every login, payment, discount, void, stock change and setting change')
 @section('actions')

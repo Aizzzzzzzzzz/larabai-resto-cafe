@@ -1,6 +1,6 @@
 @extends('layouts.customer', ['view' => 'pay'])
 
-@section('title', 'Payment · Brew & Bite Café')
+@section('title', 'Payment · LaraBai Baristro')
 
 @php
     $wallet = \App\Enums\PaymentMethod::from($order['payment_method']);

@@ -2,7 +2,7 @@
 
 @php($k = $kpis)
 
-@section('title', 'Dashboard · Brew & Bite Café')
+@section('title', 'Dashboard · LaraBai Baristro')
 @section('heading', $greeting)
 @section('sub', 'Live numbers from paid orders')
 @section('actions')

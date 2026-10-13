@@ -1,12 +1,12 @@
 @extends('layouts.guest')
 
-@section('title', 'Staff login · Brew & Bite Café')
+@section('title', 'Staff login · LaraBai Baristro')
 
 @section('content')
     <div class="login">
         <aside class="board" aria-label="Today at the café">
             <div class="board-top">
-                <a class="brand" href="{{ config('cafe.demo_mode') ? route('navigator') : route('home') }}"><span class="brand-mark">B&amp;B</span><span class="brand-name">{{ config('cafe.name') }}</span></a>
+                <a class="brand" href="{{ config('cafe.demo_mode') ? route('navigator') : route('home') }}"><span class="brand-mark">LB</span><span class="brand-name">{{ config('cafe.name') }}</span></a>
                 <x-theme-toggle />
             </div>
 

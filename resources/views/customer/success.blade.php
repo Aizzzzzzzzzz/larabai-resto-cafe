@@ -1,6 +1,6 @@
 @extends('layouts.customer', ['view' => 'success'])
 
-@section('title', 'Order placed · Brew & Bite Café')
+@section('title', 'Order placed · LaraBai Baristro')
 
 @php
     use App\Support\Format;

@@ -1,6 +1,6 @@
 @extends('layouts.customer', ['view' => 'gallery'])
 
-@section('title', 'Components · Brew & Bite Café')
+@section('title', 'Components · LaraBai Baristro')
 
 @section('content')
     <div class="app">

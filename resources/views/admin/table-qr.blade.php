@@ -1,6 +1,6 @@
 @extends('layouts.staff', ['module' => 'admin', 'view' => 'table-qr', 'active' => 'dashboard'])
 
-@section('title', 'Table QR Codes · Brew & Bite Café')
+@section('title', 'Table QR Codes · LaraBai Baristro')
 @section('heading', 'Table QR codes')
 @section('sub', 'Print and place one standee on each table and at the counter')
 @section('actions')

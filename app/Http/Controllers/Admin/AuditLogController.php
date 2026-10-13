@@ -50,7 +50,7 @@ class AuditLogController extends Controller
     public function export(Request $request): StreamedResponse
     {
         $query = $this->filtered($request);
-        $name = 'brew-bite-audit-'.now()->format('Ymd').'.csv';
+        $name = 'larabai-audit-'.now()->format('Ymd').'.csv';
 
         return response()->streamDownload(function () use ($query) {
             $out = fopen('php://output', 'w');

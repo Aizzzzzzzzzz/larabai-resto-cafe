@@ -1,13 +1,13 @@
 @extends('layouts.public', ['module' => 'index'])
 
-@section('title', 'System Navigator · Brew & Bite Café')
+@section('title', 'System Navigator · LaraBai Baristro')
 
 @section('content')
     <header class="topbar">
         <div class="container">
             <a class="brand" href="{{ route('navigator') }}">
-                <span class="brand-mark">B&amp;B</span>
-                <span class="brand-name">Brew &amp; Bite Café</span>
+                <span class="brand-mark">LB</span>
+                <span class="brand-name">LaraBai Baristro</span>
             </a>
             <div class="topbar-right">
                 <span class="tag">Demo navigator</span>
@@ -20,7 +20,7 @@
         <section class="hero">
             <div>
                 <div class="eyebrow">Case study · Tarlac City</div>
-                <h1>Brew &amp; Bite Café ordering system</h1>
+                <h1>LaraBai Baristro ordering system</h1>
                 <p class="lead">Every screen of the QR ordering, kitchen and inventory system in one place. Use it to run the demo; customers never see this page.</p>
                 <div class="live" aria-live="polite">
                     @foreach ($live as $item)
@@ -97,7 +97,7 @@
 
     <footer>
         <div class="container">
-            <span>Brew &amp; Bite Café is a fictional business for a case study. Orders and payments here are sample data; nothing is saved.</span>
+            <span>LaraBai Baristro is a fictional business for a case study. Orders and payments here are sample data; nothing is saved.</span>
             <span class="reset">
                 <a href="{{ route('navigator.components.staff') }}">Shared components</a> ·
                 <a class="btn btn-ghost" href="{{ route('admin.demo-reset.show') }}">Reset demo data</a>

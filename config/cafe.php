@@ -4,11 +4,11 @@
 
 return [
 
-    'name' => 'Brew & Bite Café',
+    'name' => 'LaraBai Baristro',
     'address' => 'F. Tañedo St., San Nicolas, Tarlac City, Tarlac',
     'hours' => 'Mon–Sun · 7:00 AM – 10:00 PM',
     'phone' => '0917 555 0142',
-    'facebook' => 'Brew & Bite Café Tarlac',
+    'facebook' => 'LaraBai Baristro Tarlac',
 
     'delivery' => [
         'fee' => 50,

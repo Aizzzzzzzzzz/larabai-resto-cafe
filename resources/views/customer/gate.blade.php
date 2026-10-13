@@ -1,6 +1,6 @@
 @extends('layouts.customer', ['view' => 'menu'])
 
-@section('title', 'Menu · Brew & Bite Café')
+@section('title', 'Menu · LaraBai Baristro')
 
 {{-- Opened without scanning a table or counter QR --}}
 @section('content')

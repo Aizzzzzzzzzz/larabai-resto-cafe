@@ -10,7 +10,7 @@
     $discountOn = (bool) old('discount');
 @endphp
 
-@section('title', 'Take Payment · Brew & Bite Café')
+@section('title', 'Take Payment · LaraBai Baristro')
 @section('heading', CashierActions::isCodCollection($order) ? 'Collect COD payment' : 'Take payment')
 @section('sub', $order['order_no'].' · '.$where.' · '.($order['source'] === 'pos' ? 'Counter order' : 'QR order'))
 @section('actions')

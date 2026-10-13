@@ -26,7 +26,7 @@
 </head>
 <body data-module="error" class="v-error-page">
     <main class="error-page">
-        <a class="brand" href="{{ url('/') }}"><span class="brand-mark">B&amp;B</span><span class="brand-name">{{ config('cafe.name') }}</span></a>
+        <a class="brand" href="{{ url('/') }}"><span class="brand-mark">LB</span><span class="brand-name">{{ config('cafe.name') }}</span></a>
         <p class="error-code">@yield('code')</p>
         <h1>@yield('title')</h1>
         <p class="error-text">@yield('text')</p>
